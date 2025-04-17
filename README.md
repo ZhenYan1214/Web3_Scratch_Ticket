@@ -1,67 +1,57 @@
-# 🎰 Lucky Scratch - Web3 NFT 刮刮樂 DApp
+# 🎰 Lucky Scratch - Web3 NFT Scratchcard on Polygon
 
-> 一款結合區塊鏈、NFT 與遊戲化體驗的去中心化應用（DApp），讓你用 0.01 ETH 就有機會抽中整池獎金！
-
----
-
-## ✨ 專案簡介
-
-**Lucky Scratch** 是一款部署於 Polygon 區塊鏈的 NFT 刮刮樂遊戲。使用者可以透過連接錢包，購買一張具備隨機獎項的 NFT，並透過視覺化刮開動畫揭曉中獎結果。所有的交易與中獎邏輯皆由智能合約控制，公平、透明、不可篡改。
+**Lucky Scratch** is a fun, gamified NFT DApp where users can mint scratchcard NFTs and instantly reveal their luck. Built on Polygon, the game is fully decentralized, transparent, and 100% on-chain.
 
 ---
 
-## 🔮 玩法流程
+## 🕹 How It Works
 
-1. 使用者連接錢包（MetaMask）
-2. 點擊購買刮刮樂（支付 0.01 ETH）
-3. 系統鑄造 NFT，隨機決定中獎等級（隱藏）
-4. 前端展示刮刮卡動畫，使用者刮開
-5. 點擊「揭曉」，觸發 `reveal()` 合約函式
-6. 若中獎，自動發送獎金到使用者錢包
-
----
-
-## 🧱 系統架構圖
-
-![System Architecture](./path-to-your-diagram.png)
+1. Connect wallet (MetaMask)
+2. Mint a scratchcard NFT (0.01 ETH)
+3. Scratch visually on UI
+4. Click "Reveal" → get instant results
+5. If you win, ETH is sent directly from the prize pool!
 
 ---
 
-## 💰 獎項機制設計
+## 💸 Prize Tiers
 
-| 等級   | 中獎機率 | 獎勵比例（從獎池） |
-|--------|-----------|--------------------|
-| 🎉 特獎 | 0.1%      | 獎池的 40%         |
-| 🥈 二獎 | 1%        | 獎池的 15%         |
-| 🥉 三獎 | 5%        | 獎池的 5%          |
-| ✨ 安慰獎 | 15%       | 退還一半費用       |
-| ❌ 沒中 | 78.9%     | 無獎金             |
+| Prize       | Chance  | Reward              |
+|-------------|---------|---------------------|
+| 🥇 Jackpot   | 0.1%    | 40% of prize pool   |
+| 🥈 2nd Prize | 1%      | 15% of prize pool   |
+| 🥉 3rd Prize | 5%      | 5% of prize pool    |
+| ✨ Refund    | 15%     | 50% refund          |
+| ❌ No Prize  | 78.9%   | No reward           |
 
-> 💡 獎池每次 mint 時累積 95%，平台抽取 5% 作為營運收入
-
----
-
-## 🔒 合約安全與設計邏輯
-
-- `mint()`：鑄造 NFT + 隨機中獎設定 + 建立 tokenURI
-- `reveal()`：揭曉結果 + 發送獎金（若中）
-- `jackpotPool`：獎池金額追蹤
-- `tokenURI()`：每張 NFT 對應 IPFS metadata（圖片 + 等級）
+> 95% of each mint funds the jackpot.  
+> 5% is collected as platform fee.
 
 ---
 
-## 🛠️ 技術棧
+## ⚙️ Tech Stack
 
-| 技術         | 用途                         |
-|--------------|------------------------------|
-| **Vue 3**     | 前端畫面與刮開動畫互動            |
-| **ethers.js** | 與智能合約互動、連接錢包           |
-| **Solidity**  | 撰寫 NFT 與獎池邏輯的智能合約      |
-| **Hardhat**   | 合約開發、測試與部署工具           |
-| **Polygon**   | 智能合約部署鏈（目前使用 Mumbai 測試網） |
-| **IPFS**      | 儲存 NFT 圖片與 metadata 資訊     |
+- **Frontend**: Vue 3 + ethers.js  
+- **Contracts**: Solidity + Hardhat  
+- **Blockchain**: Polygon (Mumbai Testnet)  
+- **Storage**: IPFS (Pinata)  
 
 ---
 
-## 📦 專案架構
+## 🧱 Core Features
 
+- ERC721 NFT scratchcards  
+- Chain-verified prize pool payout  
+- IPFS-based image + metadata  
+- Real-time mint and reveal logic  
+
+---
+
+## 🛠 Dev Commands
+
+```bash
+# Compile contracts
+npx hardhat compile
+
+# Deploy to testnet
+npx hardhat run scripts/deploy.js --network mumbai
