@@ -131,10 +131,10 @@ const connectWallet = async () => {
     const provider = new ethers.BrowserProvider(window.ethereum)
 
     try {
-      // 請求用戶切換到 Goerli 測試網
+      // 請求用戶切換到 Sepolia 測試網
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x5' }]
+        params: [{ chainId: '0xaa36a7' }] // Sepolia 的 chainId
       })
     } catch (switchError) {
       if (switchError.code === 4902) {
@@ -142,20 +142,24 @@ const connectWallet = async () => {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
-              chainId: '0x5',
-              chainName: 'Goerli Test Network',
+              chainId: '0xaa36a7',
+              chainName: 'Sepolia Test Network',
               nativeCurrency: {
-                name: 'ETH',
+                name: 'SepoliaETH',
                 symbol: 'ETH',
                 decimals: 18
               },
-              rpcUrls: ['https://goerli.infura.io/v3/'],
-              blockExplorerUrls: ['https://goerli.etherscan.io']
+              rpcUrls: ['https://sepolia.infura.io/v3/'],
+              blockExplorerUrls: ['https://sepolia.etherscan.io']
             }]
           })
         } catch (addError) {
-          throw new Error('無法添加網絡，請手動切換到 Goerli 測試網')
+          throw new Error('無法添加 Sepolia 測試網，請手動添加')
         }
+      } else if (switchError.code === 4001) {
+        throw new Error('請切換到 Sepolia 測試網以繼續')
+      } else {
+        throw new Error('切換網絡失敗，請稍後再試')
       }
     }
 
