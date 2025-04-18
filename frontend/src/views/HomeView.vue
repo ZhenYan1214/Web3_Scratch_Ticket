@@ -21,11 +21,11 @@
           <span class="text-3xl font-bold text-yellow-400">🧧 財神存錢罐</span>
         </div>
         <div class="hidden md:flex space-x-8">
-          <a href="#" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</a>
-          <a href="#" class="hover:text-yellow-400 transition-colors text-lg">💰 我的資產</a>
-          <a href="#" class="hover:text-yellow-400 transition-colors text-lg">📝 存錢記錄</a>
-          <a href="#" class="hover:text-yellow-400 transition-colors text-lg">🏆 排行榜</a>
-          <a href="#" class="hover:text-yellow-400 transition-colors text-lg">ℹ️ 關於我們</a>
+          <router-link to="/" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
+          <router-link to="/assets" class="hover:text-yellow-400 transition-colors text-lg">💰 我的資產</router-link>
+          <router-link to="/records" class="hover:text-yellow-400 transition-colors text-lg">📝 存錢記錄</router-link>
+          <router-link to="/leaderboard" class="hover:text-yellow-400 transition-colors text-lg">🏆 排行榜</router-link>
+          <router-link to="/about" class="hover:text-yellow-400 transition-colors text-lg">ℹ️ 關於我們</router-link>
         </div>
       </div>
     </nav>
