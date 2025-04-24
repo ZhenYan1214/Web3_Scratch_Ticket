@@ -1,31 +1,33 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-red-800 via-red-700 to-red-900 overflow-hidden relative">
-    <!-- 新年裝飾元素 -->
+  <div class="min-h-screen bg-[#7c4585] overflow-hidden relative">
+    <!-- 金幣動畫 -->
     <div class="absolute inset-0 pointer-events-none">
-      <div v-for="i in 20" :key="i" class="lantern absolute" :style="{
+      <div v-for="i in 20" :key="i" class="coin-large absolute" :style="{
         left: `${Math.random() * 100}%`,
         top: `${Math.random() * 100}%`,
         animationDelay: `${Math.random() * 5}s`
-      }">🏮</div>
-      <div v-for="i in 30" :key="`coin-${i}`" class="coin absolute" :style="{
+      }">
+        <img src="@/assets/coin.svg" alt="coin" class="w-8 h-8" />
+      </div>
+      <div v-for="i in 30" :key="`coin-${i}`" class="coin-small absolute" :style="{
         left: `${Math.random() * 100}%`,
         top: `${Math.random() * 100}%`,
         animationDelay: `${Math.random() * 8}s`
-      }">💰</div>
+      }">
+        <img src="@/assets/coin.svg" alt="coin" class="w-6 h-6" />
+      </div>
     </div>
 
     <!-- 頂部導航欄 -->
-    <nav class="bg-gradient-to-r from-red-900 to-red-800 text-yellow-100 py-4 px-6 shadow-lg border-b border-yellow-400/30 backdrop-blur-sm">
+    <nav class="bg-[#7c4585]/90 text-yellow-100 py-4 px-6 shadow-lg border-b border-yellow-400/30 backdrop-blur-sm">
       <div class="container mx-auto flex justify-between items-center">
         <div class="flex items-center">
-          <span class="text-3xl font-bold text-yellow-400">🧧 財神存錢罐</span>
+          <span class="text-3xl font-bold text-yellow-400">Lucky Scratch</span>
         </div>
         <div class="hidden md:flex space-x-8">
-          <router-link to="/" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
-          <router-link to="/assets" class="hover:text-yellow-400 transition-colors text-lg">💰 我的資產</router-link>
-          <router-link to="/records" class="hover:text-yellow-400 transition-colors text-lg">📝 存錢記錄</router-link>
-          <router-link to="/leaderboard" class="hover:text-yellow-400 transition-colors text-lg">🏆 排行榜</router-link>
-          <router-link to="/about" class="hover:text-yellow-400 transition-colors text-lg">ℹ️ 關於我們</router-link>
+          <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
+          <router-link to="/pool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
+          <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">📜 規則說明</router-link>
         </div>
       </div>
     </nav>
@@ -35,10 +37,10 @@
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左側：土豆流氓和新年祝福 -->
         <div class="lg:w-2/3 relative">
-          <div class="bg-gradient-to-br from-red-950/80 to-red-900/80 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
+          <div class="bg-[#7c4585]/80 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
-            <h1 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">🎊 恭喜發財 🎊</h1>
-            <p class="text-2xl text-yellow-200 mb-8">新年旺旺來，財運滾滾來！</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">✨ 好運刮刮樂 ✨</h1>
+            <p class="text-2xl text-yellow-200 mb-8">試試手氣，下一個就是你！</p>
             
             <!-- 土豆流氓圖片 -->
             <div class="relative mx-auto w-72 h-72 mb-8">
@@ -51,47 +53,41 @@
             </div>
             
             <!-- 獎池 -->
-            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-red-950 rounded-xl p-8 shadow-xl mb-8 transform hover:scale-105 transition-transform border border-yellow-400/50">
-              <h2 class="text-3xl font-bold mb-2">🏮 新年獎池 🏮</h2>
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-[#7c4585] rounded-xl p-8 shadow-xl mb-8 transform hover:scale-105 transition-transform border border-yellow-400/50">
+              <h2 class="text-3xl font-bold mb-2">🔮 神秘獎池 🔮</h2>
               <div class="text-5xl font-bold mb-2">888,888 ETH</div>
-              <p class="text-lg">新年加碼！每日抽出八位幸運用戶</p>
+              <p class="text-lg">每日抽取八位幸運用戶</p>
             </div>
             
-            <!-- 操作按鈕 -->
-            <div class="flex flex-wrap justify-center gap-6">
-              <button class="bg-gradient-to-r from-red-600 to-red-700 text-yellow-200 px-8 py-4 rounded-xl hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-105 flex items-center text-xl shadow-lg border-2 border-yellow-400/30">
-                <span class="text-2xl mr-2">🧧</span>
-                開始存錢
-              </button>
-              <button class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-red-950 px-8 py-4 rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all transform hover:scale-105 flex items-center text-xl shadow-lg border-2 border-yellow-400/30">
-                <span class="text-2xl mr-2">💱</span>
-                代幣兌換
-              </button>
-            </div>
+            <!-- 買刮刮樂按鈕 -->
+            <button class="w-full max-w-md mx-auto bg-gradient-to-r from-yellow-500 to-yellow-600 text-[#7c4585] px-8 py-6 rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all transform hover:scale-105 flex items-center justify-center text-2xl shadow-lg border-2 border-yellow-400/30">
+              <span class="text-3xl mr-2">🎫</span>
+              立即購買刮刮樂
+            </button>
           </div>
         </div>
         
         <!-- 右側：排行榜 -->
         <div class="lg:w-1/3">
-          <div class="bg-gradient-to-br from-red-950/80 to-red-900/80 rounded-2xl shadow-2xl p-6 border-2 border-yellow-400/50 backdrop-blur-sm">
-            <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">🏆 財神榜 🏆</h2>
+          <div class="bg-[#7c4585]/80 rounded-2xl shadow-2xl p-6 border-2 border-yellow-400/50 backdrop-blur-sm">
+            <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">🏆 神秘榜單 🏆</h2>
             
             <div class="space-y-4">
               <div v-for="(user, index) in topUsers" :key="index" 
                 class="flex items-center p-4 rounded-xl transition-all hover:transform hover:scale-102 bg-gradient-to-r" 
                 :class="[
                   index === 0 ? 'from-yellow-500/20 to-yellow-600/20 border border-yellow-400/50' : 
-                  index === 1 ? 'from-gray-500/20 to-gray-600/20 border border-gray-400/50' : 
-                  index === 2 ? 'from-red-500/20 to-red-600/20 border border-red-400/50' : 
-                  'from-red-950/50 to-red-900/50 border border-red-800/30'
+                  index === 1 ? 'from-[#7c4585]/20 to-[#7c4585]/30 border border-[#7c4585]/50' : 
+                  index === 2 ? 'from-[#7c4585]/10 to-[#7c4585]/20 border border-[#7c4585]/30' : 
+                  'from-[#7c4585]/5 to-[#7c4585]/10 border border-[#7c4585]/20'
                 ]"
               >
                 <div class="w-10 h-10 flex items-center justify-center rounded-full mr-4 text-xl"
                   :class="[
-                    index === 0 ? 'bg-yellow-500 text-red-950' : 
-                    index === 1 ? 'bg-gray-400 text-white' : 
-                    index === 2 ? 'bg-red-500 text-white' : 
-                    'bg-red-800/50 text-white'
+                    index === 0 ? 'bg-yellow-500 text-[#7c4585]' : 
+                    index === 1 ? 'bg-[#7c4585] text-yellow-400' : 
+                    index === 2 ? 'bg-[#7c4585]/80 text-yellow-400' : 
+                    'bg-[#7c4585]/60 text-yellow-400'
                   ]"
                 >
                   {{ ['🥇', '🥈', '🥉'][index] || (index + 1) }}
@@ -135,16 +131,16 @@ const topUsers = ref([
 </script>
 
 <style scoped>
-.lantern {
-  font-size: 2rem;
+.coin-large {
   animation: float 3s ease-in-out infinite;
-  opacity: 0.5;
+  opacity: 0.7;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
 }
 
-.coin {
-  font-size: 1.5rem;
+.coin-small {
   animation: spin 4s linear infinite;
-  opacity: 0.3;
+  opacity: 0.5;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
 }
 
 @keyframes float {
