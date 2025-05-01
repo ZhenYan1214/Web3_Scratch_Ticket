@@ -1,28 +1,48 @@
 <template>
-  <div class="min-h-screen bg-[#7c4585] overflow-hidden relative">
-    <!-- 金幣動畫 -->
-    <div class="absolute inset-0 pointer-events-none">
-      <div v-for="i in 20" :key="i" class="coin-large absolute" :style="{
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        animationDelay: `${Math.random() * 5}s`
-      }">
-        <img src="@/assets/coin.svg" alt="coin" class="w-8 h-8" />
-      </div>
-      <div v-for="i in 30" :key="`coin-${i}`" class="coin-small absolute" :style="{
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        animationDelay: `${Math.random() * 8}s`
-      }">
-        <img src="@/assets/coin.svg" alt="coin" class="w-6 h-6" />
-      </div>
+  <!-- 首頁背景設定 -->
+  <div class="min-h-screen bg-[#7c4585] overflow-hidden relative">  
+  
+<!-- ✅ 全頁金幣動畫：在圖層最下方 -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div v-for="i in 20" :key="i" class="coin-large absolute" :style="{
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 5}s`
+    }">
+      <img src="/images/coin.png" alt="coin" class="w-8 h-8" />
+      
     </div>
+    <div v-for="i in 30" :key="`coin-${i}`" class="coin-small absolute" :style="{
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 8}s`
+    }">
+      <img src="/images/coin.png" alt="coin" class="w-6 h-6" />
+    </div>
+
+    <!-- 💰 撒錢動畫 -->
+  <div class="money-animation">
+    <div
+      v-for="(coin, i) in fallingCoins"
+      :key="i"
+      class="money-item"
+      :style="{
+        left: `${coin.left}%`,
+        animationDelay: `${coin.delay}s`,
+        animationDuration: `${coin.duration}s`
+      }"
+    >
+      <img src="/images/coin.png" alt="coin" class="w-6 h-6" />
+    </div>
+  </div>
+
+  </div>
 
     <!-- 頂部導航欄 -->
     <nav class="bg-[#7c4585]/90 text-yellow-100 py-4 px-6 shadow-lg border-b border-yellow-400/30 backdrop-blur-sm">
       <div class="container mx-auto flex justify-between items-center">
         <div class="flex items-center">
-          <span class="text-3xl font-bold text-yellow-400">Lucky Scratch</span>
+          <span class="text-3xl font-bold text-yellow-400">Lucky  Scratch</span>
         </div>
         <div class="hidden md:flex space-x-8">
           <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
@@ -59,11 +79,13 @@
               <p class="text-lg">每日抽取八位幸運用戶</p>
             </div>
             
-            <!-- 買刮刮樂按鈕 -->
-            <button class="w-full max-w-md mx-auto bg-gradient-to-r from-yellow-500 to-yellow-600 text-[#7c4585] px-8 py-6 rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all transform hover:scale-105 flex items-center justify-center text-2xl shadow-lg border-2 border-yellow-400/30">
+
+
+            <button class="buy-button">
               <span class="text-3xl mr-2">🎫</span>
               立即購買刮刮樂
             </button>
+          
           </div>
         </div>
         
@@ -115,7 +137,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+  import { ref } from 'vue'
+  import '@/assets/styles/buy.css'  
+
+  const coinsLarge = Array.from({ length: 20 }, () => ({
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    delay: Math.random() * 5
+  })) 
+  const fallingCoins = Array.from({ length: 30 }, () => ({
+  left: Math.random() * 100,
+  delay: Math.random() * 5,
+  duration: 3 + Math.random() * 2
+  }))
+
+  
 
 // 排行榜數據
 const topUsers = ref([
@@ -175,12 +211,14 @@ const topUsers = ref([
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 0;
 }
 
 .money-item {
   position: absolute;
   animation: fall linear infinite;
   opacity: 0;
+  z-index: 0;
 }
 
 @keyframes fall {
@@ -195,8 +233,9 @@ const topUsers = ref([
     opacity: 1;
   }
   100% {
-    transform: translateY(1000%) rotate(360deg);
+    transform: translateY(100vh) rotate(360deg);
     opacity: 0;
   }
 }
+
 </style> 
