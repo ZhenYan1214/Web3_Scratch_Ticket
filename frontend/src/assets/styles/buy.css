@@ -1,0 +1,35 @@
+.buy-button {
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(to right, #f59e0b, #d97706); /* 黃色漸層 */
+    color: #7c4585;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    border: 2px solid rgba(250, 204, 21, 0.3);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    }
+
+    .buy-button:hover {
+    background: linear-gradient(to right, #facc15, #fbbf24);
+    transform: scale(1.05);
+    }
+
+    .icon {
+    font-size: 1.75rem;
+    margin-right: 0.5rem;
+}
+  
+.eth-glow {
+    animation: glow 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes glow {
+    0% { text-shadow: 0 0 5px gold; }
+    100% { text-shadow: 0 0 20px gold, 0 0 40px yellow; }
+  }
+  

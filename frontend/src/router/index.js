@@ -25,11 +25,6 @@ const routes = [
     component: () => import('@/views/LeaderboardView.vue'),
     meta: { requiresWallet: true }
   },
-  {
-    path: '/about',
-    name: 'about',
-    component: () => import('@/views/AboutView.vue')
-  }
 ]
 
 const router = createRouter({
