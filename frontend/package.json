@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "ethers": "^6.11.1",
+    "piggy-vault": "file:",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
   },
