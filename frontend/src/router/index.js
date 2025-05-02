@@ -8,6 +8,12 @@ const routes = [
     meta: { requiresWallet: true }
   },
   {
+    path: '/cards',
+    name: 'cards',
+    component: () => import('@/views/CardsView.vue'),
+    meta: { requiresWallet: true }
+  },
+  {
     path: '/assets',
     name: 'assets',
     component: () => import('@/views/AssetsView.vue'),
