@@ -164,8 +164,10 @@
   </div>
 </template>
 
+
 <script setup>
   import { ref, onMounted } from 'vue'
+
   import '@/assets/styles/buy.css'  
   import ScratchCardModal from '@/components/ScratchCardModal.vue'
 
