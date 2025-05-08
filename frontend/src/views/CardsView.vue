@@ -4,7 +4,7 @@
     <nav class="bg-[#7c4585]/90 text-yellow-100 py-4 px-6 shadow-lg border-b border-yellow-400/30 backdrop-blur-sm">
       <div class="container mx-auto flex justify-between items-center">
         <div class="flex items-center">
-          <span class="text-3xl font-bold text-yellow-400">Lucky Scratch</span>
+          <span class="text-3xl font-bold text-yellow-400"  @click="goBack">Lucky Scratch</span>
         </div>
         <div class="hidden md:flex space-x-8">
           <router-link to="/" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
