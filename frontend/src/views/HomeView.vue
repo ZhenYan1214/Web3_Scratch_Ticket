@@ -80,11 +80,10 @@
             </div>
             
 
-
-            <button class="buy-button">
+            <button class="buy-button" @click="$router.push('/buy')">
               <span class="text-3xl mr-2">🎫</span>
-              立即購買刮刮樂
-            </button>
+                立即購買刮刮樂
+              </button>
           
           </div>
         </div>
@@ -134,11 +133,43 @@
       </div>
     </div>
   </div>
+
+  <!-- 刮刮樂選擇彈窗 -->
+  <ScratchCardModal
+    :isVisible="isModalVisible"
+    :cards="scratchCards"
+    @close="isModalVisible = false"
+    @select="handleCardSelect"
+  />
+
+  <!-- 刮刮樂動畫 -->
+  <div v-if="selectedCard" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="relative bg-white rounded-lg p-6 shadow-lg w-96">
+      <h2 class="text-2xl font-bold text-center mb-4">刮開你的刮刮樂！</h2>
+      <div class="relative w-64 h-96 mx-auto">
+        <img :src="selectedCard.image" alt="刮刮樂" class="w-full h-full object-cover" />
+        <canvas
+          ref="scratchCanvas"
+          class="absolute inset-0"
+          @mousedown="startScratching"
+          @mousemove="scratch"
+          @mouseup="stopScratching"
+          @mouseleave="stopScratching"
+        ></canvas>
+      </div>
+      <button @click="resetScratchCard" class="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+        完成
+      </button>
+    </div>
+  </div>
 </template>
 
-<script setup>  
-  import { ref } from 'vue'
+
+<script setup>
+  import { ref, onMounted } from 'vue'
+
   import '@/assets/styles/buy.css'  
+  import ScratchCardModal from '@/components/ScratchCardModal.vue'
 
   const coinsLarge = Array.from({ length: 20 }, () => ({
     left: Math.random() * 100,
@@ -164,6 +195,54 @@ const topUsers = ref([
   { name: '🌟 搖錢樹', amount: '222,222' },
   { name: '✨ 財運到', amount: '111,111' }
 ])
+
+const isModalVisible = ref(false)
+const selectedCard = ref(null)
+const scratchCards = [
+  { name: '金幣卡', image: '/images/scratch-card-1.png' },
+  { name: '幸運卡', image: '/images/scratch-card-2.png' },
+  { name: '財神卡', image: '/images/scratch-card-3.png' }
+]
+
+const handleCardSelect = (card) => {
+  selectedCard.value = card
+  isModalVisible.value = false
+}
+
+const resetScratchCard = () => {
+  selectedCard.value = null
+}
+
+const scratchCanvas = ref(null)
+let isScratching = false
+
+const startScratching = () => {
+  isScratching = true
+}
+
+const scratch = (event) => {
+  if (!isScratching || !scratchCanvas.value) return
+  const ctx = scratchCanvas.value.getContext('2d')
+  const rect = scratchCanvas.value.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  ctx.globalCompositeOperation = 'destination-out'
+  ctx.beginPath()
+  ctx.arc(x, y, 20, 0, Math.PI * 2)
+  ctx.fill()
+}
+
+const stopScratching = () => {
+  isScratching = false
+}
+
+onMounted(() => {
+  if (scratchCanvas.value) {
+    const ctx = scratchCanvas.value.getContext('2d')
+    ctx.fillStyle = '#ccc'
+    ctx.fillRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+  }
+})
 </script>
 
 <style scoped>
@@ -238,4 +317,4 @@ const topUsers = ref([
   }
 }
 
-</style> 
+</style>
