@@ -136,7 +136,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup>  
   import { ref } from 'vue'
   import '@/assets/styles/buy.css'  
 
