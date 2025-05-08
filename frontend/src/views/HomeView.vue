@@ -165,6 +165,10 @@
 </template>
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0f388354 (B)
 <script setup>
   import { ref, onMounted } from 'vue'
 
