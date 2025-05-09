@@ -63,10 +63,10 @@
             <p class="text-2xl text-yellow-200 mb-8">試試手氣，下一個就是你！</p>
             
             <!-- 土豆流氓圖片 -->
-            <div class="relative mx-auto w-72 h-72 mb-8">
+            <div class="relative mx-auto w-188 h-188 mb-8">
               <div class="absolute inset-0 bg-yellow-400/20 rounded-full animate-pulse"></div>
               <img 
-                src="/images/potato-gangster.png" 
+                src="/images/money2.jpg" 
                 alt="戴墨鏡的土豆流氓" 
                 class="w-full h-full object-contain animate-bounce"
               />
