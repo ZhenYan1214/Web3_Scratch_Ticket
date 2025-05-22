@@ -1,33 +1,50 @@
 <template>
-  <nav class="bg-[#7c4585]/90 text-yellow-100 py-4 px-6 shadow-lg border-b border-yellow-400/30 backdrop-blur-sm">
-    <div class="flex items-center">
-      <span class="text-3xl font-bold text-yellow-400" @click="goBack">Lucky  Scratch</span>
-    </div>
-  </nav>
+  <!-- 頂部導航欄 -->
+    <nav class="bg-[#7c4585]/90 text-yellow-100 py-4 px-6 shadow-lg border-b border-yellow-400/30 backdrop-blur-sm">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+          <router-link to="/home" class="text-3xl font-bold text-yellow-400 hover:text-yellow-300 transition-colors">
+            Lucky Scratch
+          </router-link>
+        </div>
+        <div class="hidden md:flex space-x-8">
+          <router-link to="/home" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
+          <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
+          <router-link to="/pool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
+          <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">📜 規則說明</router-link>
+        </div>
+      </div>
+    </nav>
   <div class="min-h-screen bg-[#7c4585] flex flex-col items-center justify-center text-yellow-100">
     <h1 class="text-4xl font-bold mb-8">🎫 購買刮刮樂</h1>
-    <div v-if="!selectedCard" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div v-if="!selectedCard" class="flex flex-row gap-8 overflow-x-auto pb-4">
       <div
         v-for="(card, index) in scratchCards"
         :key="index"
-        class="bg-white text-[#7c4585] rounded-lg shadow-lg p-6 text-center cursor-pointer hover:scale-105 transition-transform"
+        class="bg-white text-[#7c4585] rounded-lg shadow-lg p-6 text-center cursor-pointer hover:scale-105 transition-transform min-w-[220px]"
         @click="selectCard(card)"
       >
-        <img :src="card.image" :alt="card.name" class="w-32 h-48 mx-auto mb-4" />
+        <div class="w-40 h-40 mx-auto mb-4 flex items-center justify-center">
+          <img
+            :src="card.image"
+            :alt="card.name"
+            class="w-full h-full object-cover rounded-lg"
+          />
+        </div>
         <h2 class="text-2xl font-bold">{{ card.name }}</h2>
         <p class="text-lg mt-2">價格：0.01 ETH</p>
       </div>
     </div>
 
-    <!-- 連接錢包與付款 Modal -->
+    <!-- 確認付款 Modal（不連結錢包） -->
     <div v-if="showPayModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 shadow-lg w-96 text-[#7c4585]">
-        <h2 class="text-2xl font-bold text-center mb-4">連接錢包並付款</h2>
-        <p class="text-center mb-4">請連接錢包並支付 <span class="font-bold">0.01 ETH</span> 以購買刮刮樂。</p>
+        <h2 class="text-2xl font-bold text-center mb-4">確認付款</h2>
+        <p class="text-center mb-4">請確認支付 <span class="font-bold">0.01 ETH</span> 以購買刮刮樂。</p>
         <button
           class="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 mb-2"
           @click="pay"
-        >連接錢包並付款</button>
+        >確認付款</button>
         <button
           class="w-full bg-gray-300 text-[#7c4585] py-2 rounded-lg hover:bg-gray-400"
           @click="cancelPay"
@@ -57,17 +74,25 @@
       <div class="relative bg-white rounded-lg p-6 shadow-lg w-96">
         <h2 class="text-2xl font-bold text-center mb-4" style="color: #7c4585">刮開你的刮刮樂！</h2>
         <div class="relative w-64 h-96 mx-auto">
-          <img :src="prizeImage" alt="prize" class="w-full h-full object-cover rounded" />
+          <!-- 下層：獎項圖片，依隨機結果顯示 -->
+          <img
+            v-if="prizeResult"
+            :src="prizeResult.img"
+            :alt="prizeResult.text"
+            class="w-full h-full object-cover rounded absolute inset-0 z-0"
+          />
+          <!-- 上層：灰色遮罩 canvas -->
           <canvas
             ref="scratchCanvas"
             width="256"
             height="384"
-            class="absolute inset-0 rounded"
+            class="absolute inset-0 rounded z-10"
             @mousedown="startScratching"
             @mousemove="scratch"
             @mouseup="stopScratching"
             @mouseleave="stopScratching"
           ></canvas>
+       
         </div>
         <button @click="resetScratchCard" class="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
           完成
@@ -88,9 +113,11 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const scratchCards = [
-  { name: '金幣卡', image: '/images/scratch-card-1.png' },
-  { name: '幸運卡', image: '/images/scratch-card-2.png' },
-  { name: '財神卡', image: '/images/scratch-card-3.png' }
+  { name: '金幣卡', image: '/images/card/3.png' },
+  { name: '福氣卡', image: '/images/card/5.png' },
+  { name: '幸運卡', image: '/images/card/2.png' },
+  { name: '財神卡', image: '/images/card/4.png' },
+  { name: '吉祥卡', image: '/images/card/1.png' }
 ]
 
 const selectedCard = ref(null)
@@ -101,14 +128,38 @@ const scratchCanvas = ref(null)
 const prizeImage = ref('/images/prize.png')
 let isScratching = false
 
+const prizeOptions = [
+  {
+    img: '/images/prizes/thanks.png',
+    probability: 65
+  },
+  {
+    img: '/images/prizes/feedback.png',
+    probability: 15
+  },
+  {
+    img: '/images/prizes/lucky.png',
+    probability: 10
+  },
+  {
+    img: '/images/prizes/goodluck.png',
+    probability: 5
+  },
+  {
+    img: '/images/prizes/gold.png',
+    probability: 0.5
+  }
+]
+
+const prizeResult = ref(null)
+
 const selectCard = (card) => {
   selectedCard.value = card
   showPayModal.value = true
 }
 
 const pay = () => {
-  // 這裡應串接錢包與付款邏輯
-  // 模擬付款成功
+  // 直接模擬付款成功
   showPayModal.value = false
   showAfterPay.value = true
 }
@@ -120,6 +171,7 @@ const cancelPay = () => {
 
 const showScratch = () => {
   showAfterPay.value = false
+  prizeResult.value = getRandomPrize()
   showScratchModal.value = true
   nextTick(drawMask)
 }
@@ -129,7 +181,7 @@ const resetScratchCard = () => {
   showPayModal.value = false
   showAfterPay.value = false
   showScratchModal.value = false
-  router.push('/cards') // 新增這行，跳回我的卡片頁面
+  router.push('/cards')
 }
 
 const startScratching = () => {
@@ -171,6 +223,23 @@ watch(showScratchModal, (val) => {
 
 const goBack = () => {
   router.push('/')
+}
+
+const getPrizeImage = (card) => {
+  // 根據選擇的卡片返回對應的獎項圖片
+  return card.image.replace('/images/', '/images/prizes/').replace('.png', '-prize.png')
+}
+
+// 機率抽獎
+function getRandomPrize() {
+  const rand = Math.random() * 100
+  let sum = 0
+  for (const prize of prizeOptions) {
+    sum += prize.probability
+    if (rand < sum) return prize
+  }
+  // 若沒中，預設回傳最後一個
+  return prizeOptions[prizeOptions.length - 1]
 }
 </script>
 

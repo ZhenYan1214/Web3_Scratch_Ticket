@@ -1,5 +1,22 @@
 <template>
   <div class="min-h-screen bg-[#7c4585] relative overflow-hidden">
+    <!-- 導覽列 -->
+    <nav class="bg-[#7c4585]/90 text-yellow-100 py-4 px-6 shadow-lg border-b border-yellow-400/30 backdrop-blur-sm sticky top-0 z-50">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+          <router-link to="/home" class="text-3xl font-bold text-yellow-400 hover:text-yellow-300 transition-colors">
+            Lucky Scratch
+          </router-link>
+        </div>
+        <div class="flex space-x-8">
+          <router-link to="/home" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
+          <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
+          <router-link to="/buy" class="hover:text-yellow-400 transition-colors text-lg">🛒 購買刮刮樂</router-link>
+          <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg font-bold">📜 規則說明</router-link>
+        </div>
+      </div>
+    </nav>
+
     <!-- 動態背景效果 -->
     <div class="absolute inset-0">
       <!-- 光暈效果 -->
@@ -28,7 +45,6 @@
           <h1 class="text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
             財神存錢罐
           </h1>
-          <div class="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-red-600 opacity-30 blur"></div>
         </div>
         <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
           Web3 時代的智能理財新選擇
@@ -89,51 +105,11 @@
         </div>
       </div>
     </div>
-
-    <!-- 固定在畫面下方的連接錢包按鈕 -->
-    <div
-      v-if="!walletConnected"
-      class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50"
-    >
-      <button
-        @click="connectWallet"
-        class="wallet-btn bg-yellow-400 text-[#7c4585] px-8 py-4 rounded-xl font-bold text-2xl shadow-lg hover:bg-yellow-300 transition"
-      >
-        連接錢包
-      </button>
-      <div v-if="errorMsg" class="error-message mt-4">{{ errorMsg }}</div>
-    </div>
-    <div
-      v-else
-      class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 text-yellow-200 text-xl"
-    >
-      錢包已連接，正在跳轉...
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-const walletConnected = ref(false)
-const errorMsg = ref('')
-const router = useRouter()
-
-async function connectWallet() {
-  errorMsg.value = ''
-  if (window.ethereum) {
-    try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' })
-      walletConnected.value = true
-      router.push('/home')
-    } catch (e) {
-      errorMsg.value = '錢包連接失敗，請重試'
-    }
-  } else {
-    errorMsg.value = '請先安裝 MetaMask 或其他以太坊錢包'
-  }
-}
+// 無AOS動畫，無需特別JS
 </script>
 
 <style scoped>
@@ -179,14 +155,14 @@ async function connectWallet() {
   @apply flex justify-center items-center mb-4;
 }
 
-/* 錢包按鈕樣式 */
-.wallet-btn {
-  @apply relative inline-flex items-center px-8 py-4 rounded-xl cursor-pointer transform transition-all duration-300 hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed;
-}
-
 /* 錯誤訊息樣式 */
 .error-message {
   @apply flex items-center justify-center space-x-2 text-red-300 bg-red-900/50 px-6 py-3 rounded-xl backdrop-blur-sm border border-red-500/30;
+}
+
+/* 提示文字樣式 */
+.connect-hint {
+  @apply text-red-200 text-lg;
 }
 
 /* 特別優惠樣式 */
@@ -225,17 +201,5 @@ async function connectWallet() {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* AOS 動畫 */
-[data-aos] {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.aos-animate {
-  opacity: 1;
-  transform: translateY(0);
 }
 </style>

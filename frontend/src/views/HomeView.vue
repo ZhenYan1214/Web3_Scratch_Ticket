@@ -63,7 +63,7 @@
             <p class="text-2xl text-yellow-200 mb-8">試試手氣，下一個就是你！</p>
             
             <!-- 土豆流氓圖片 -->
-            <div class="relative mx-auto w-188 h-188 mb-8">
+            <div class="relative mx-auto w-200 h-200 mb-8">
               <div class="absolute inset-0 bg-yellow-400/20 rounded-full animate-pulse"></div>
               <img 
                 src="/images/money2.jpg" 
@@ -72,12 +72,7 @@
               />
             </div>
             
-            <!-- 獎池 -->
-            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-[#7c4585] rounded-xl p-8 shadow-xl mb-8 transform hover:scale-105 transition-transform border border-yellow-400/50">
-              <h2 class="text-3xl font-bold mb-2">🔮 神秘獎池 🔮</h2>
-              <div class="text-5xl font-bold mb-2">888,888 ETH</div>
-              <p class="text-lg">每日抽取八位幸運用戶</p>
-            </div>
+           
             
 
             <button class="buy-button" @click="$router.push('/buy')">
@@ -165,13 +160,8 @@
 </template>
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 0f388354 (B)
 <script setup>
   import { ref, onMounted } from 'vue'
-
   import '@/assets/styles/buy.css'  
   import ScratchCardModal from '@/components/ScratchCardModal.vue'
 
