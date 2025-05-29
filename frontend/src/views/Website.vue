@@ -296,6 +296,9 @@ onMounted(async () => {
         walletAddress.value = accounts[0]
         walletConnected.value = true
         console.log('檢測到已連接的錢包:', accounts[0])
+        setTimeout(() => {
+          router.push('/home')
+        }, 2000)
       }
       
       // 監聽事件
