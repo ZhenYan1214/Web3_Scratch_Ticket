@@ -28,13 +28,13 @@
       <!-- 🧧 Logo 區塊 -->
       <section class="text-center mb-16">
         <div class="relative inline-block">
-          <h1 class="text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
-            財神存錢罐
+          <h1 class="text-glow text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
+            Lucky Scratch
           </h1>
           <div class="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-red-600 opacity-30 blur"></div>
         </div>
         <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
-          Web3 時代的智能理財新選擇
+          Web3 刮刮樂遊戲，帶來無限驚喜！
         </p>
       </section>
 
@@ -296,6 +296,9 @@ onMounted(async () => {
         walletAddress.value = accounts[0]
         walletConnected.value = true
         console.log('檢測到已連接的錢包:', accounts[0])
+        setTimeout(() => {
+          router.push('/home')
+        }, 2000)
       }
       
       // 監聽事件
@@ -335,10 +338,10 @@ onUnmounted(() => {
 
 @keyframes titleShine {
   0%, 100% {
-    background-position: 0% 50%;
+    background-position: -100% 0%;
   }
   50% {
-    background-position: 100% 50%;
+    background-position: 100% 0%;
   }
 }
 
