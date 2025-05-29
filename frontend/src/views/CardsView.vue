@@ -26,7 +26,7 @@
           v-for="type in statusTypes"
           :key="type"
           @click="selectedStatus = type"
-          :class="[
+          :class=" [
             'px-6 py-2 rounded-full font-bold transition',
             selectedStatus === type
               ? 'bg-yellow-400 text-[#7c4585] shadow'
@@ -38,37 +38,46 @@
       </div>
       <!-- 卡片滑動區域 -->
       <div class="relative overflow-x-auto pb-8">
-        <div class="flex space-x-6 px-4 snap-x snap-mandatory overflow-x-auto scrollbar-hide">
+        <div class="flex flex-row gap-8 px-4 snap-x snap-mandatory overflow-x-auto scrollbar-hide">
           <!-- 刮刮樂卡片 -->
+          <!-- 卡片區塊 -->
           <div
             v-for="card in filteredCards"
             :key="card.id"
             class="snap-center shrink-0"
           >
             <div
-              class="w-72 h-96 bg-gradient-to-br from-[#7c4585]/80 to-purple-900/80 rounded-2xl shadow-2xl p-6 backdrop-blur-sm transform transition-all duration-300 hover:scale-105"
-              :class=" [
+              :class="[
+                'bg-white text-[#7c4585] rounded-lg shadow-lg p-6 text-center min-w-[220px] w-64 h-[370px] flex flex-col items-center justify-between border-4 transition-transform duration-300 hover:scale-105',
                 card.status === '待刮開'
-                  ? 'cursor-pointer ring-2 ring-yellow-300 border-2 border-yellow-300'
+                  ? 'border-yellow-300'
                   : card.status === '已中獎'
-                  ? 'border-2 border-emerald-400 ring-2 ring-emerald-300'
+                  ? 'border-emerald-400'
                   : card.status === '未中獎'
-                  ? 'border-2 border-gray-400 ring-2 ring-gray-300'
-                  : 'border-2 border-yellow-400/50'
+                  ? 'border-gray-400'
+                  : 'border-yellow-400/50',
+                justAdded === card.id ? 'animate-shake-x' : ''
               ]"
-              @click="card.status === '待刮開' && goToScratch(card)"
             >
-              <div class="h-full flex flex-col items-center justify-between">
-                <div class="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center mb-4 overflow-hidden">
-                  <img :src="card.img" alt="card" class="w-full h-full object-cover" />
-                </div>
-                <div class="text-center">
-                  <div v-if="card.status === '已中獎'" class="text-yellow-400 text-xl font-bold mb-2">獎金金額</div>
-                  <div v-if="card.status === '已中獎'" class="text-3xl font-bold text-yellow-300">
-                    {{ card.amount }} ETH
-                  </div>
-                  <div class="text-yellow-200 mt-2">{{ card.status }}</div>
-                </div>
+              <div class="w-36 h-36 mx-auto mb-2 flex items-center justify-center rounded-lg overflow-hidden bg-white">
+                <img :src="card.img" :alt="card.name" class="w-full h-full object-contain" />
+              </div>
+              <div class="text-2xl font-extrabold mb-1 leading-tight">{{ card.name }}</div>
+              <div v-if="card.status === '已中獎'" class="text-yellow-500 text-xl font-bold mb-1 leading-tight">獎金金額</div>
+              <div v-if="card.status === '已中獎'" class="text-3xl font-bold text-yellow-400 mb-1 leading-tight">
+                {{ card.amount }} ETH
+              </div>
+              <div
+                :class="[
+                  'mt-1 text-lg font-bold leading-tight',
+                  card.status === '已中獎'
+                    ? 'text-emerald-500'
+                    : card.status === '未中獎'
+                    ? 'text-gray-500'
+                    : 'text-yellow-500'
+                ]"
+              >
+                {{ card.status }}
               </div>
             </div>
           </div>
@@ -84,44 +93,56 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-const statusTypes = ['全部', '已中獎', '未中獎', '待刮開']
-const selectedStatus = ref('全部')
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
-// 卡片圖片資源
-const cardImages = [
-  '/images/card/1.png',
-  '/images/card/2.png',
-  '/images/card/3.png',
-  '/images/card/4.png',
-  '/images/card/5.png'
-]
+const route = useRoute()
+const justAdded = ref(null)
+const showScratchModal = ref(false)
 
-// 卡片數據（每張卡隨機一張圖）
-function getRandomImg() {
-  return cardImages[Math.floor(Math.random() * cardImages.length)]
+// 讀取 localStorage 中的卡片資料
+const myCards = ref([])
+
+function loadCardsFromStorage() {
+  const stored = localStorage.getItem('myCards')
+  if (stored) {
+    try {
+      myCards.value = JSON.parse(stored)
+    } catch {
+      myCards.value = []
+    }
+  } else {
+    myCards.value = []
+  }
 }
-const cards = ref([
-  { id: 1, img: getRandomImg(), amount: '0.5', status: '已中獎' },
-  { id: 2, img: getRandomImg(), amount: '0.8', status: '未中獎' },
-  { id: 3, img: getRandomImg(), amount: '1.2', status: '待刮開' },
-  { id: 4, img: getRandomImg(), amount: '0.3', status: '已中獎' },
-  { id: 5, img: getRandomImg(), amount: '2.0', status: '待刮開' },
-  { id: 6, img: getRandomImg(), amount: '0.6', status: '未中獎' }
-])
 
-const filteredCards = computed(() => {
-  if (selectedStatus.value === '全部') return cards.value
-  return cards.value.filter(card => card.status === selectedStatus.value)
+onMounted(() => {
+  loadCardsFromStorage()
+  ensureDefaultCards()
+  if (route.query.justAdded) {
+    justAdded.value = Number(route.query.justAdded)
+    history.replaceState(null, '', location.pathname)
+  }
 })
 
-const showScratchModal = ref(false)
-const selectedCard = ref(null)
+const statusTypes = ['全部', '已中獎', '未中獎', '待刮開']
+const selectedStatus = ref('全部')
+const filteredCards = computed(() => {
+  if (selectedStatus.value === '全部') return myCards.value
+  return myCards.value.filter(card => card.status === selectedStatus.value)
+})
 
-function goToScratch(card) {
-  selectedCard.value = card
-  showScratchModal.value = true
-  // 其他初始化動畫的程式
+// 新增卡片時，已中獎或未中獎都會存進 localStorage
+function addCard(resultStatus, prizeAmount, selectedCard) {
+  const newCard = {
+    id: Date.now(),
+    img: selectedCard.value.image,
+    name: selectedCard.value.name,
+    status: resultStatus,
+    amount: resultStatus === '已中獎' ? prizeAmount : ''
+  }
+  myCards.value.push(newCard)
+  localStorage.setItem('myCards', JSON.stringify(myCards.value))
 }
 </script>
 
@@ -143,28 +164,25 @@ function goToScratch(card) {
 }
 
 /* 動畫 */
-@import "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css";
+@keyframes bounce-in {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  80% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.animate-bounce-in {
+  animation: bounce-in 0.7s;
+}
 
-.confetti {
-  width: 100%;
-  height: 60px;
-  background: url('https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/asset/other/confetti.gif') center/contain no-repeat;
+/* 新增的搖動動畫 */
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-16px); }
+  40% { transform: translateX(12px); }
+  60% { transform: translateX(-8px); }
+  80% { transform: translateX(4px); }
 }
-.shake {
-  width: 100%;
-  height: 40px;
-  animation: shake 0.7s;
-}
-@keyframes shake {
-  10%, 90% { transform: translateX(-2px); }
-  20%, 80% { transform: translateX(4px); }
-  30%, 50%, 70% { transform: translateX(-8px); }
-  40%, 60% { transform: translateX(8px); }
-}
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+.animate-shake-x {
+  animation: shake-x 0.7s;
 }
 </style>
