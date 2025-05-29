@@ -2,7 +2,7 @@
   <!-- 首頁背景設定 -->
   <div class="min-h-screen bg-[#7c4585] overflow-hidden relative">  
   
-<!-- ✅ 全頁金幣動畫：在圖層最下方 -->
+<!--全頁金幣動畫：在圖層最下方 -->
   <div class="absolute inset-0 pointer-events-none">
     <div v-for="i in 20" :key="i" class="coin-large absolute" :style="{
       left: `${Math.random() * 100}%`,
