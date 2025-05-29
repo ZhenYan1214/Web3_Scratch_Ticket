@@ -1,29 +1,32 @@
 <template>
   <div class="min-h-screen bg-[#7c4585] relative overflow-hidden">
-    <!-- 動態背景效果 -->
+    <!-- 🌟 背景動畫層 -->
     <div class="absolute inset-0">
-      <!-- 光暈效果 -->
+      <!-- 光暈 -->
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,215,0,0.15),transparent_70%)] animate-pulse"></div>
-      <!-- 浮動的金幣和符號 -->
-      <div class="coins-container">
-        <div v-for="i in 30" :key="i" class="coin-symbol" :style="{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          animationDelay: `${Math.random() * 10}s`,
-          fontSize: `${Math.random() * 20 + 20}px`
-        }">
-          {{ ['💰', '🪙', '💎', '✨'][Math.floor(Math.random() * 4)] }}
+      
+      <!-- 漂浮符號 -->
+      <div class="floating-symbols pointer-events-none absolute inset-0 z-0">
+        <div
+          v-for="(style, i) in floatingStyles"
+          :key="i"
+          class="absolute floating-item"
+          :style="style"
+        >
+          {{ symbols[i % symbols.length] }}
         </div>
       </div>
-      <!-- 福字裝飾 -->
+
+      <!-- 福/財 -->
       <div class="absolute top-10 left-10 transform -rotate-12 opacity-20 text-8xl text-yellow-500 animate-float-slow">福</div>
       <div class="absolute bottom-10 right-10 transform rotate-12 opacity-20 text-8xl text-yellow-500 animate-float-slow">財</div>
     </div>
 
-    <!-- 主要內容 -->
-    <div class="relative z-10 container mx-auto px-4 py-12 min-h-screen flex flex-col items-center justify-center">
-      <!-- Logo 區域 -->
-      <div class="text-center mb-16 transform hover:scale-105 transition-transform duration-500">
+    <!-- 🌟 主內容層 -->
+    <div class="relative z-10 container mx-auto px-4 py-12">
+
+      <!-- 🧧 Logo 區塊 -->
+      <section class="text-center mb-16">
         <div class="relative inline-block">
           <h1 class="text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
             財神存錢罐
@@ -33,209 +36,410 @@
         <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
           Web3 時代的智能理財新選擇
         </p>
-      </div>
+      </section>
 
-      <!-- 特色卡片 -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 w-full max-w-6xl">
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🔒</span>
+      <!-- ✨ 三張特色卡片 -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 w-full max-w-6xl mx-auto">
+        <div 
+          class="feature-card group bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border border-white/20" 
+          v-for="(item, idx) in features" 
+          :key="idx"
+        >
+          <div class="card-content text-center">
+            <div class="icon-wrapper mb-4">
+              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300 inline-block">{{ item.icon }}</span>
             </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">安全可靠</h3>
-            <p class="text-red-100">智能合約審計，資產安全無憂</p>
+            <h3 class="text-xl font-bold mb-3 text-yellow-300">{{ item.title }}</h3>
+            <p class="text-red-100">{{ item.desc }}</p>
           </div>
-          <div class="card-glow"></div>
         </div>
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">💰</span>
+      </section>
+
+      <!-- 🟡 連接錢包按鈕 -->
+      <section class="flex justify-center my-10">
+        <!-- 未連接狀態 -->
+        <div v-if="!walletConnected && !isConnecting" class="text-center">
+          <button
+            @click="connectWallet"
+            class="wallet-btn bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-[#7c4585] px-12 py-4 rounded-xl font-bold text-2xl shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:shadow-[0_0_30px_rgba(255,215,0,0.8)] transition-all duration-300 transform hover:scale-105 active:scale-95"
+          >
+            <span class="flex items-center space-x-3">
+              <span>🦊</span>
+              <span>連接 MetaMask 錢包</span>
+            </span>
+          </button>
+          <p class="text-yellow-200 text-sm mt-4 opacity-80">
+            點擊按鈕連接您的 MetaMask 錢包開始使用
+          </p>
+        </div>
+
+        <!-- 連接中狀態 -->
+        <div v-else-if="isConnecting" class="text-center">
+          <div class="bg-white/10 backdrop-blur-md rounded-xl px-8 py-6 border border-yellow-400/30">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+              <span class="text-yellow-200 text-xl font-medium">正在連接錢包...</span>
             </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">收益豐厚</h3>
-            <p class="text-red-100">DeFi 收益優化，財運滾滾來</p>
+            <p class="text-yellow-200/80 text-sm">請在 MetaMask 中確認連接請求</p>
           </div>
-          <div class="card-glow"></div>
         </div>
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🚀</span>
+
+        <!-- 連接成功狀態 -->
+        <div v-else-if="walletConnected" class="text-center">
+          <div class="bg-green-500/20 backdrop-blur-md rounded-xl px-8 py-6 border border-green-400/30 animate-fade-in">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+              <span class="text-3xl"></span>
+              <span class="text-green-200 text-xl font-medium">錢包連接成功！</span>
             </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">創新科技</h3>
-            <p class="text-red-100">區塊鏈技術，引領未來理財</p>
+            <p class="text-green-200/80 text-sm mb-4">
+              錢包地址：{{ formatAddress(walletAddress) }}
+            </p>
+            <div class="flex items-center justify-center space-x-2">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-green-400"></div>
+              <span class="text-green-200 text-sm">正在跳轉到主頁面...</span>
+            </div>
           </div>
-          <div class="card-glow"></div>
+        </div>
+      </section>
+
+      <!-- ❗ 錯誤訊息 -->
+      <div v-if="errorMsg" class="flex justify-center mb-8">
+        <div class="error-message bg-red-500/20 backdrop-blur-md border border-red-400/30 rounded-xl px-6 py-4 max-w-md animate-fade-in">
+          <div class="flex items-center space-x-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+              <p class="text-red-200 font-medium">連接失敗</p>
+              <p class="text-red-200/80 text-sm">{{ errorMsg }}</p>
+            </div>
+          </div>
+          <button 
+            @click="clearError" 
+            class="mt-3 text-red-300 hover:text-red-100 text-sm underline"
+          >
+            關閉
+          </button>
         </div>
       </div>
 
-      <!-- 規則說明 -->
-      <div class="text-center space-y-6">
-        <h2 class="text-3xl font-bold text-yellow-300 mb-4">規則說明</h2>
-        <ul class="text-xl text-yellow-100 space-y-2">
-          <li>1. 連接錢包後可購買刮刮樂，每張 0.01 ETH。</li>
-          <li>2. 刮開刮刮樂有機會獲得不同獎項，最高可得金幣大放送獎！</li>
-          <li>3. 每日抽取八位幸運用戶，獎池金額每日更新。</li>
-          <li>4. 所有過程皆由智能合約自動執行，公平公正。</li>
-        </ul>
-      </div>
-
-      <!-- 底部資訊 -->
-      <div class="absolute bottom-8 left-0 right-0 text-center">
-        <div class="special-offer">
-          <span class="icon">🎁</span>
-          <span class="text">新年限定：連接錢包即可參與 888 ETH 限時空投</span>
-          <span class="icon">🎁</span>
+      <!-- 📜 規則說明 -->
+      <section class="my-16 flex justify-center">
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl px-8 py-6 shadow-xl text-white text-lg w-full max-w-3xl mx-auto border border-white/20 animate-slide-up">
+          <h2 class="text-3xl font-bold text-yellow-300 mb-4 text-center">📜 規則說明</h2>
+          <ul class="space-y-3">
+            <li class="flex items-start space-x-3">
+              <span class="text-yellow-400 mt-1 text-lg">💳</span>
+              <span>連接錢包後可購買刮刮樂，每張 0.01 ETH</span>
+            </li>
+            <li class="flex items-start space-x-3">
+              <span class="text-yellow-400 mt-1 text-lg">🎁</span>
+              <span>刮開可獲得驚喜獎項，金幣大放送！</span>
+            </li>
+            <li class="flex items-start space-x-3">
+              <span class="text-yellow-400 mt-1 text-lg">🍀</span>
+              <span>每日抽選八位幸運用戶，獎池金額天天更新</span>
+            </li>
+            <li class="flex items-start space-x-3">
+              <span class="text-yellow-400 mt-1 text-lg">🤖</span>
+              <span>智能合約自動執行，公平又安心</span>
+            </li>
+          </ul>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- 固定在畫面下方的連接錢包按鈕 -->
-    <div
-      v-if="!walletConnected"
-      class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50"
-    >
-      <button
-        @click="connectWallet"
-        class="wallet-btn bg-yellow-400 text-[#7c4585] px-8 py-4 rounded-xl font-bold text-2xl shadow-lg hover:bg-yellow-300 transition"
-      >
-        連接錢包
-      </button>
-      <div v-if="errorMsg" class="error-message mt-4">{{ errorMsg }}</div>
-    </div>
-    <div
-      v-else
-      class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 text-yellow-200 text-xl"
-    >
-      錢包已連接，正在跳轉...
+      <!-- 🎉 特別優惠 -->
+      <section class="flex justify-center">
+        <div class="special-offer flex items-center justify-center space-x-4 bg-yellow-500/20 px-6 py-3 rounded-full backdrop-blur-sm border border-yellow-400/30 animate-bounce-gentle">
+          <span class="icon text-2xl animate-bounce">🎉</span>
+          <span class="text-red-100 text-lg">特別優惠：首次購買刮刮樂可獲得額外 10% 獎金！</span>
+        </div>
+      </section>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
-const walletConnected = ref(false)
-const errorMsg = ref('')
 const router = useRouter()
+const symbols = ['💰', '🪙', '💎', '✨']
+const walletConnected = ref(false)
+const walletAddress = ref('')
+const errorMsg = ref('')
+const isConnecting = ref(false)
 
-async function connectWallet() {
-  errorMsg.value = ''
-  if (window.ethereum) {
-    try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' })
-      walletConnected.value = true
-      router.push('/home')
-    } catch (e) {
-      errorMsg.value = '錢包連接失敗，請重試'
-    }
-  } else {
-    errorMsg.value = '請先安裝 MetaMask 或其他以太坊錢包'
+const features = [
+  { icon: '🔒', title: '安全可靠', desc: '智能合約審計，資產安全無憂' },
+  { icon: '💰', title: '收益豐厚', desc: 'DeFi 收益優化，財運滾滾來' },
+  { icon: '🚀', title: '創新科技', desc: '區塊鏈技術，引領未來理財' }
+]
+
+const floatingStyles = Array.from({ length: 40 }, (_, i) => getFloatingStyle(i))
+
+function getFloatingStyle(i) {
+  const left = Math.random() * 100
+  const top = Math.random() * 100
+  const size = Math.random() * 24 + 16
+  const rotate = Math.random() * 360
+  const duration = Math.random() * 4 + 2
+  const delay = Math.random() * 3
+  const opacity = Math.random() * 0.4 + 0.3
+
+  return {
+    left: `${left}%`,
+    top: `${top}%`,
+    fontSize: `${size}px`,
+    '--init-rotate': `rotate(${rotate}deg)`,
+    '--float-distance': '20px',
+    animation: `floatAnim ${duration}s ease-in-out ${delay}s infinite`,
+    opacity: opacity.toFixed(2),
   }
 }
+
+function formatAddress(address) {
+  if (!address) return ''
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
+function clearError() {
+  errorMsg.value = ''
+}
+
+async function connectWallet() {
+  if (isConnecting.value) return
+  
+  clearError()
+  isConnecting.value = true
+  
+  // 檢查是否安裝 MetaMask
+  if (!window.ethereum) {
+    errorMsg.value = '請先安裝 MetaMask 錢包擴展程式！'
+    isConnecting.value = false
+    return
+  }
+  
+  try {
+    console.log('開始連接錢包...')
+    
+    // 請求連接帳戶
+    const accounts = await window.ethereum.request({ 
+      method: 'eth_requestAccounts' 
+    })
+    
+    console.log('獲取到的帳戶:', accounts)
+    
+    if (accounts && accounts.length > 0) {
+      walletAddress.value = accounts[0]
+      walletConnected.value = true
+      
+      console.log('錢包連接成功，地址:', accounts[0])
+      
+      // 延遲跳轉，讓用戶看到成功訊息
+      setTimeout(() => {
+        alert('即將跳轉')
+        router.push('/home').then(() => {
+          alert('跳轉成功')
+        }).catch((error) => {
+          alert('跳轉失敗: ' + error)
+        })
+      }, 2000)
+      
+      // 清除錯誤訊息
+      errorMsg.value = ''
+      
+    } else {
+      errorMsg.value = '未能獲取錢包地址，請重試'
+    }
+    
+  } catch (err) {
+    console.error('錢包連接錯誤:', err)
+    
+    if (err.code === 4001) {
+      errorMsg.value = '您拒絕了錢包連接請求'
+    } else if (err.code === -32002) {
+      errorMsg.value = '請先在 MetaMask 中處理待確認的請求'
+    } else {
+      errorMsg.value = `連接失敗：${err.message || '未知錯誤'}`
+    }
+  } finally {
+    isConnecting.value = false
+  }
+}
+
+// 監聽帳戶變更
+function handleAccountsChanged(accounts) {
+  console.log('帳戶變更:', accounts)
+  if (accounts.length === 0) {
+    // 用戶斷開了錢包
+    walletConnected.value = false
+    walletAddress.value = ''
+  } else {
+    // 用戶切換了帳戶
+    walletAddress.value = accounts[0]
+    walletConnected.value = true
+  }
+}
+
+// 監聽鏈變更
+function handleChainChanged(chainId) {
+  console.log('鏈變更:', chainId)
+  // 可以在這裡處理鏈變更邏輯
+}
+
+onMounted(async () => {
+  // 檢查是否已經連接錢包
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' })
+      if (accounts && accounts.length > 0) {
+        walletAddress.value = accounts[0]
+        walletConnected.value = true
+        console.log('檢測到已連接的錢包:', accounts[0])
+      }
+      
+      // 監聽事件
+      window.ethereum.on('accountsChanged', handleAccountsChanged)
+      window.ethereum.on('chainChanged', handleChainChanged)
+      
+    } catch (error) {
+      console.error('檢查錢包狀態時發生錯誤:', error)
+    }
+  }
+})
+
+onUnmounted(() => {
+  // 清理事件監聽器
+  if (window.ethereum) {
+    window.ethereum.removeListener('accountsChanged', handleAccountsChanged)
+    window.ethereum.removeListener('chainChanged', handleChainChanged)
+  }
+})
 </script>
 
 <style scoped>
-/* 動畫關鍵幀 */
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(5deg); }
+.floating-item {
+  position: absolute;
+  will-change: transform;
+  transform: var(--init-rotate, rotate(0deg));
 }
 
-@keyframes shine {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+@keyframes floatAnim {
+  0%, 100% {
+    transform: var(--init-rotate, rotate(0deg)) translateY(0);
+  }
+  50% {
+    transform: var(--init-rotate, rotate(0deg)) translateY(var(--float-distance));
+  }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes coin-float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-100px) rotate(180deg); }
-}
-
-/* 基礎樣式 */
-.feature-card {
-  @apply relative bg-gradient-to-br from-red-900/40 to-purple-900/40 p-8 rounded-2xl backdrop-blur-sm border border-red-500/30 text-center transform transition-all duration-500 hover:scale-105 overflow-hidden;
-}
-
-.card-content {
-  @apply relative z-10;
-}
-
-.card-glow {
-  @apply absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-red-500/20 opacity-0 transition-opacity duration-300;
-}
-
-.feature-card:hover .card-glow {
-  @apply opacity-100;
-}
-
-.icon-wrapper {
-  @apply flex justify-center items-center mb-4;
-}
-
-/* 錢包按鈕樣式 */
-.wallet-btn {
-  @apply relative inline-flex items-center px-8 py-4 rounded-xl cursor-pointer transform transition-all duration-300 hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed;
-}
-
-/* 錯誤訊息樣式 */
-.error-message {
-  @apply flex items-center justify-center space-x-2 text-red-300 bg-red-900/50 px-6 py-3 rounded-xl backdrop-blur-sm border border-red-500/30;
-}
-
-/* 特別優惠樣式 */
-.special-offer {
-  @apply inline-flex items-center space-x-3 bg-red-900/30 px-6 py-3 rounded-full backdrop-blur-sm border border-red-500/30;
-}
-
-.special-offer .icon {
-  @apply text-xl animate-bounce;
-}
-
-.special-offer .text {
-  @apply text-red-100;
-}
-
-/* 浮動元素動畫 */
-.coin-symbol {
-  @apply absolute;
-  animation: coin-float 15s ease-in-out infinite;
-}
-
-/* 標題動畫 */
-.animate-title-shine {
-  background-size: 200% auto;
-  animation: shine 3s linear infinite;
-}
-
-.animate-float-slow {
-  animation: float 8s ease-in-out infinite;
-}
-
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
+@keyframes titleShine {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* AOS 動畫 */
-[data-aos] {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(var(--init-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--init-rotate, 0deg));
+  }
 }
 
-.aos-animate {
-  opacity: 1;
-  transform: translateY(0);
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-title-shine {
+  background-size: 200% 200%;
+  animation: titleShine 3s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+.animate-float-slow {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+.animate-bounce-gentle {
+  animation: bounceGentle 2s ease-in-out infinite;
+}
+
+.feature-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.feature-card:hover::before {
+  left: 100%;
+}
+
+.wallet-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.wallet-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.wallet-btn:hover::before {
+  left: 100%;
 }
 </style>
