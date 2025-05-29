@@ -73,7 +73,7 @@
     <div v-if="showScratchModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="relative bg-white rounded-lg p-6 shadow-lg w-96">
         <h2 class="text-2xl font-bold text-center mb-4" style="color: #7c4585">刮開你的刮刮樂！</h2>
-        <div class="relative w-64 h-96 mx-auto">
+        <div class="relative w-64 h-96 mx-auto scratch-cursor">
           <!-- 下層：獎項圖片，依隨機結果顯示 -->
           <img
             v-if="prizeResult"
@@ -92,11 +92,22 @@
             @mouseup="stopScratching"
             @mouseleave="stopScratching"
           ></canvas>
-       
         </div>
-        <button @click="resetScratchCard" class="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
-          完成
-        </button>
+      </div>
+      <!-- 彈出獎勵框 -->
+      <div
+        v-if="showPrizeModal"
+        class="fixed inset-0 flex items-center justify-center z-60"
+      >
+        <div class="bg-white rounded-2xl shadow-2xl px-8 py-8 flex flex-col items-center border-4 border-yellow-400">
+          <div class="text-4xl mb-4" v-if="prizeMsg.emoji">{{ prizeMsg.emoji }}</div>
+          <div class="text-2xl font-bold mb-2 text-[#7c4585]">{{ prizeMsg.title }}</div>
+          <div class="text-lg text-gray-700 mb-4">{{ prizeMsg.text }}</div>
+          <button
+            class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition"
+            @click="closePrizeModal"
+          >關閉</button>
+        </div>
       </div>
     </div>
 
@@ -108,9 +119,10 @@
 
 <script setup>
 import { ref, onMounted, nextTick, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const scratchCards = [
   { name: '金幣卡', image: '/images/card/3.png' },
@@ -146,12 +158,31 @@ const prizeOptions = [
     probability: 5
   },
   {
-    img: '/images/prizes/gold.png',
+    img: '/images/prizes/money.png',
     probability: 0.5
   }
 ]
 
 const prizeResult = ref(null)
+const scratchedPercent = ref(0)
+const prizeGiven = ref(false)
+const showPrizeModal = ref(false)
+const prizeMsg = ref({
+  title: '',
+  text: '',
+  emoji: ''
+})
+
+const justAddedCardId = ref(null)
+const justAdded = ref(null)
+
+onMounted(() => {
+  if (route.query.justAdded) {
+    justAdded.value = Number(route.query.justAdded)
+    // 清除 query 參數，避免重複動畫
+    history.replaceState(null, '', location.pathname)
+  }
+})
 
 const selectCard = (card) => {
   selectedCard.value = card
@@ -173,15 +204,35 @@ const showScratch = () => {
   showAfterPay.value = false
   prizeResult.value = getRandomPrize()
   showScratchModal.value = true
+  prizeGiven.value = false
+  scratchedPercent.value = 0
   nextTick(drawMask)
 }
 
+function addCardToMyCards(card) {
+  const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
+  const newCard = {
+    id: Date.now(),
+    img: card.image,
+    status: '待刮開',
+    amount: '',
+    name: card.name
+  }
+  myCards.push(newCard)
+  localStorage.setItem('myCards', JSON.stringify(myCards))
+  justAddedCardId.value = newCard.id // 標記剛加入的卡片
+}
+
 const resetScratchCard = () => {
+  if (selectedCard.value) {
+    addCardToMyCards(selectedCard.value)
+  }
   selectedCard.value = null
   showPayModal.value = false
   showAfterPay.value = false
   showScratchModal.value = false
-  router.push('/cards')
+  // 跳轉並帶上動畫標記
+  router.push({ path: '/cards', query: { justAdded: justAddedCardId.value } })
 }
 
 const startScratching = () => {
@@ -198,10 +249,46 @@ const scratch = (event) => {
   ctx.beginPath()
   ctx.arc(x, y, 20, 0, Math.PI * 2)
   ctx.fill()
+
+  // 計算已刮面積百分比
+  const imageData = ctx.getImageData(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+  let transparent = 0
+  for (let i = 3; i < imageData.data.length; i += 4) {
+    if (imageData.data[i] === 0) transparent++
+  }
+  scratchedPercent.value = transparent / (scratchCanvas.value.width * scratchCanvas.value.height) * 100
+
+  // 若已刮超過40%，自動顯示獎金
+  if (scratchedPercent.value > 40 && !prizeGiven.value) {
+    givePrizeByImage()
+    prizeGiven.value = true
+  }
 }
 
 const stopScratching = () => {
   isScratching = false
+}
+
+// 根據底圖給予獎金（用彈窗顯示）
+function givePrizeByImage() {
+  if (!prizeResult.value) return
+  if (prizeResult.value.img.includes('money')) {
+    prizeMsg.value = { title: '恭喜獲得 1 ETH！', text: '你中了最大獎！', emoji: '🎉' }
+  } else if (prizeResult.value.img.includes('goodluck')) {
+    prizeMsg.value = { title: '恭喜獲得 0.1 ETH！', text: '好運降臨！', emoji: '🍀' }
+  } else if (prizeResult.value.img.includes('lucky')) {
+    prizeMsg.value = { title: '恭喜獲得 0.05 ETH！', text: '幸運之神眷顧你！', emoji: '✨' }
+  } else {
+    prizeMsg.value = { title: '謝謝參與！', text: '再接再厲，下次會更好！', emoji: '🙏' }
+  }
+  showPrizeModal.value = true
+}
+
+// 關閉彈窗
+function closePrizeModal() {
+  showPrizeModal.value = false
+  showScratchModal.value = false   // 關閉中獎視窗時，同時關閉刮刮樂動畫
+  selectedCard.value = null        // 回到購買刮刮樂頁面（顯示卡片選擇）
 }
 
 function drawMask() {
@@ -244,5 +331,16 @@ function getRandomPrize() {
 </script>
 
 <style scoped>
-/* 可根據需要添加樣式 */
+.z-60 {
+  z-index: 60;
+}
+@keyframes bounce-in {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  80% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.animate-bounce-in {
+  animation: bounce-in 0.7s;
+}
 </style>
