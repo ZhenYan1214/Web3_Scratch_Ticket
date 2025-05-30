@@ -11,7 +11,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3011,
+    port: 8080,
     strictPort: true // 強制使用指定端口，如果被占用則報錯
   }
 }) 
