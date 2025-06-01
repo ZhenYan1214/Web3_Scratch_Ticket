@@ -85,7 +85,7 @@
             ref="scratchCanvas"
             width="256"
             height="384"
-            class="absolute inset-0 rounded z-10"
+            class="absolute inset-0 rounded z-10 scratch-cursor"
             @mousedown="startScratching"
             @mousemove="scratch"
             @mouseup="stopScratching"
@@ -273,7 +273,7 @@ const scratch = (event) => {
   scratchedPercent.value = transparent / (scratchCanvas.value.width * scratchCanvas.value.height) * 100
 
   // 若已刮超過40%，自動顯示獎金
-  if (scratchedPercent.value > 40 && !prizeGiven.value) {
+  if (scratchedPercent.value > 50 && !prizeGiven.value) {
     givePrizeByImage()
     prizeGiven.value = true
   }
@@ -301,7 +301,7 @@ function givePrizeByImage() {
     status = '已中獎'
     amount = '0.05'
   } else if (prizeResult.value.img.includes('feedback')) {
-    prizeMsg.value = { title: '感謝支持！', text: '你獲得 0.01 ETH 回饋獎，祝你下次中大獎！', emoji: '💌' }
+    prizeMsg.value = { title: '恭喜獲得 0.01 ETH！', text: '祝你下次中大獎！', emoji: '💌' }
     status = '已中獎'
     amount = '0.01'
   } else {
@@ -324,13 +324,13 @@ function closePrizeModal() {
 function drawMask() {
   if (scratchCanvas.value) {
     const ctx = scratchCanvas.value.getContext('2d')
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.fillStyle = '#bbb'
-    ctx.fillRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
-    ctx.font = 'bold 32px sans-serif'
-    ctx.fillStyle = '#888'
-    ctx.textAlign = 'center'
-    ctx.fillText('刮一刮', scratchCanvas.value.width / 2, scratchCanvas.value.height / 2)
+    const maskImg = new window.Image()
+    maskImg.src = '/images/unscratch.png'
+    maskImg.onload = () => {
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.clearRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+      ctx.drawImage(maskImg, 0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+    }
   }
 }
 
@@ -386,5 +386,8 @@ function recordCard(card, resultStatus, prizeAmount = '') {
 }
 .animate-bounce-in {
   animation: bounce-in 0.7s;
+}
+.scratch-cursor {
+  cursor: url('/images/finger.png') 16 16,auto;
 }
 </style>
