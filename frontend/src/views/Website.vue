@@ -127,7 +127,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+// 檢查是否已連接錢包
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWalletStore } from '@/store/wallet'
 import { storeToRefs } from 'pinia'
@@ -136,8 +137,27 @@ const router = useRouter()
 const walletStore = useWalletStore()
 const { isConnected, error, isConnecting, canRetry } = storeToRefs(walletStore)
 
-const walletConnected = computed(() => isConnected.value)
-const errorMsg = computed(() => error.value)
+const walletConnected = ref(false)
+const errorMsg = ref('')
+
+onMounted(async () => {
+  if (window.ethereum) {
+    try {
+      // 檢查是否已授權
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' })
+      walletConnected.value = accounts.length > 0
+      // 若未連接可自動提示用戶連接
+      if (!walletConnected.value) {
+        // 可選：自動彈窗要求連接
+        // await window.ethereum.request({ method: 'eth_requestAccounts' })
+      }
+    } catch (e) {
+      walletConnected.value = false
+    }
+  } else {
+    walletConnected.value = false
+  }
+})
 
 async function connectWallet() {
   errorMsg.value = ''

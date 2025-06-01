@@ -46,18 +46,18 @@
         </div>
         <div class="hidden md:flex space-x-8">
           <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
-          <router-link to="/pool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
+        
           <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">📜 規則說明</router-link>
         </div>
       </div>
     </nav>
 
     <!-- 主要內容區 -->
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-6">
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左側：土豆流氓和新年祝福 -->
         <div class="lg:w-2/3 relative">
-          <div class="bg-[#7c4585]/80 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
+          <div class="w-200 bg-[#7c4585]/80 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
             <h1 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">✨ 好運刮刮樂 ✨</h1>
             <p class="text-2xl text-yellow-200 mb-8">試試手氣，下一個就是你！</p>
@@ -89,7 +89,7 @@
             <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">🏆 神秘榜單 🏆</h2>
             
             <div class="space-y-4">
-              <div v-for="(user, index) in topUsers" :key="index" 
+              <div v-for="(user, index) in topUsers.slice(0,5)" :key="index" 
                 class="flex items-center p-4 rounded-xl transition-all hover:transform hover:scale-102 bg-gradient-to-r" 
                 :class="[
                   index === 0 ? 'from-yellow-500/20 to-yellow-600/20 border border-yellow-400/50' : 
