@@ -101,7 +101,7 @@
             ref="scratchCanvas"
             width="256"
             height="384"
-            class="absolute inset-0 rounded z-10"
+            class="absolute inset-0 rounded z-10 scratch-cursor"
             @mousedown="startScratching"
             @mousemove="scratch"
             @mouseup="stopScratching"
@@ -141,25 +141,15 @@ const cardRecord = ref([])
 
 function loadCardsFromStorage() {
   const stored = localStorage.getItem('myCards')
-  if (stored) {
-    try {
-      cardRecord.value = JSON.parse(stored)
-    } catch {
-      cardRecord.value = []
-    }
-  } else {
-    cardRecord.value = []
-  }
+  cardRecord.value = stored ? JSON.parse(stored) : []
 }
 
 onMounted(() => {
   loadCardsFromStorage()
-  ensureDefaultCards()
-  if (route.query.justAdded) {
-    justAdded.value = Number(route.query.justAdded)
-    history.replaceState(null, '', location.pathname)
-  }
 })
+
+
+
 
 const statusTypes = ['全部', '已中獎', '未中獎', '待刮開']
 const selectedStatus = ref('全部')
@@ -179,6 +169,19 @@ function addCard(resultStatus, prizeAmount, selectedCard) {
   }
   cardRecord.value.push(newCard)
   localStorage.setItem('myCards', JSON.stringify(cardRecord.value))
+}
+
+function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
+  const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
+  const newCard = {
+    id: Date.now(),
+    img: card.image,
+    name: card.name,
+    status: resultStatus,
+    amount: resultStatus === '已中獎' ? prizeAmount : ''
+  }
+  myCards.push(newCard)
+  localStorage.setItem('myCards', JSON.stringify(myCards))
 }
 
 function ensureDefaultCards() {
@@ -256,7 +259,7 @@ function scratch(event) {
   scratchedPercent.value = transparent / (scratchCanvas.value.width * scratchCanvas.value.height) * 100
 
   // 若已刮超過40%，自動顯示獎金
-  if (scratchedPercent.value > 40 && !prizeGiven.value) {
+  if (scratchedPercent.value > 50 && !prizeGiven.value) {
     revealPrize()
     prizeGiven.value = true
   }
@@ -269,13 +272,13 @@ function stopScratching() {
 function drawMask() {
   if (scratchCanvas.value) {
     const ctx = scratchCanvas.value.getContext('2d')
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.fillStyle = '#bbb'
-    ctx.fillRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
-    ctx.font = 'bold 32px sans-serif'
-    ctx.fillStyle = '#888'
-    ctx.textAlign = 'center'
-    ctx.fillText('刮一刮', scratchCanvas.value.width / 2, scratchCanvas.value.height / 2)
+    const maskImg = new window.Image()
+    maskImg.src = '/images/unscratch.png'
+    maskImg.onload = () => {
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.clearRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+      ctx.drawImage(maskImg, 0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+    }
   }
 }
 
@@ -317,7 +320,7 @@ function revealPrize() {
     status = '已中獎'
     amount = '0.05'
   } else if (prize.img.includes('feedback')) {
-    prizeMsg.value = { title: '感謝支持！', text: '你獲得 0.01 ETH 回饋獎，祝你下次中大獎！', emoji: '💌' }
+    prizeMsg.value = { title: '恭喜獲得 0.01 ETH！', text: '祝你下次中大獎！', emoji: '💌' }
     status = '已中獎'
     amount = '0.01'
   } else {
@@ -344,16 +347,29 @@ function closeScratchModal() {
   scratchModalCard.value = null
 }
 
-// 根據卡片名稱對應到獎項圖片
-function getPrizeImage(card) {
-  // 假設你的命名規則和購買頁一致
-  // 例如：/images/card/3.png -> /images/prizes/3.png
-  if (!card || !card.img) return ''
-  return card.img.replace('/images/card/', '/images/prizes/')
+// 取得錢包地址，例如 userAddress = '0x123...'
+const userAddress = ref('')
+
+// 儲存卡片
+function saveCards(cards) {
+  if (!userAddress.value) return
+  localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(cards))
 }
+
+// 讀取卡片
+function loadCards() {
+  if (!userAddress.value) return []
+  const stored = localStorage.getItem(`myCards_${userAddress.value}`)
+  return stored ? JSON.parse(stored) : []
+}
+
+
 </script>
 
 <style scoped>
+.scratch-cursor {
+  cursor: url('/images/finger.png'), pointer;
+}
 /* 隱藏滾動條但保持功能 */
 .scrollbar-hide {
   -ms-overflow-style: none;
