@@ -6,7 +6,17 @@ import CardsView from '@/views/CardsView.vue'
 import Rules from '@/views/Rules.vue'
 
 const routes = [
-  
+  {
+    path: '/', 
+    redirect: '/home'
+  },
+  /*
+    {
+    path: '/',
+    name: 'website',
+    component: Website
+  },
+  */
   {
     path: '/home',
     name: 'home',

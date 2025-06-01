@@ -10,7 +10,6 @@
         <div class="hidden md:flex space-x-8">
           <router-link to="/home" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
           <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
-          <router-link to="/pool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
           <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">📜 規則說明</router-link>
         </div>
       </div>
@@ -209,18 +208,35 @@ const showScratch = () => {
   nextTick(drawMask)
 }
 
-function addCardToMyCards(card) {
+
+// 刪除這個舊的版本
+// function addCardToMyCards(card) {
+//   const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
+//   const newCard = {
+//     id: Date.now(),
+    // img: card.image,
+    // status: '待刮開',
+    // amount: '',
+    // name: card.name
+  // }
+  // myCards.push(newCard)
+  // localStorage.setItem('myCards', JSON.stringify(myCards))
+  // justAddedCardId.value = newCard.id // 標記剛加入的卡片
+// }
+
+// 保留這個新版（支援已中獎/未中獎/待刮開）
+function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
   const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
   const newCard = {
     id: Date.now(),
     img: card.image,
-    status: '待刮開',
-    amount: '',
-    name: card.name
+    name: card.name,
+    status: resultStatus, // '已中獎'、'未中獎'、'待刮開'
+    amount: resultStatus === '已中獎' ? prizeAmount : ''
   }
   myCards.push(newCard)
   localStorage.setItem('myCards', JSON.stringify(myCards))
-  justAddedCardId.value = newCard.id // 標記剛加入的卡片
+  justAddedCardId.value = newCard.id
 }
 
 const resetScratchCard = () => {
@@ -231,8 +247,6 @@ const resetScratchCard = () => {
   showPayModal.value = false
   showAfterPay.value = false
   showScratchModal.value = false
-  // 跳轉並帶上動畫標記
-  router.push({ path: '/cards', query: { justAdded: justAddedCardId.value } })
 }
 
 const startScratching = () => {
@@ -272,15 +286,31 @@ const stopScratching = () => {
 // 根據底圖給予獎金（用彈窗顯示）
 function givePrizeByImage() {
   if (!prizeResult.value) return
+  let status = '未中獎'
+  let amount = ''
   if (prizeResult.value.img.includes('money')) {
     prizeMsg.value = { title: '恭喜獲得 1 ETH！', text: '你中了最大獎！', emoji: '🎉' }
+    status = '已中獎'
+    amount = '1'
   } else if (prizeResult.value.img.includes('goodluck')) {
     prizeMsg.value = { title: '恭喜獲得 0.1 ETH！', text: '好運降臨！', emoji: '🍀' }
+    status = '已中獎'
+    amount = '0.1'
   } else if (prizeResult.value.img.includes('lucky')) {
     prizeMsg.value = { title: '恭喜獲得 0.05 ETH！', text: '幸運之神眷顧你！', emoji: '✨' }
+    status = '已中獎'
+    amount = '0.05'
+  } else if (prizeResult.value.img.includes('feedback')) {
+    prizeMsg.value = { title: '感謝支持！', text: '你獲得 0.01 ETH 回饋獎，祝你下次中大獎！', emoji: '💌' }
+    status = '已中獎'
+    amount = '0.01'
   } else {
     prizeMsg.value = { title: '謝謝參與！', text: '再接再厲，下次會更好！', emoji: '🙏' }
+    status = '未中獎'
+    amount = ''
   }
+  // 新增：記錄卡片到 myCards
+  addCardToMyCards(selectedCard.value, status, amount)
   showPrizeModal.value = true
 }
 
@@ -327,6 +357,20 @@ function getRandomPrize() {
   }
   // 若沒中，預設回傳最後一個
   return prizeOptions[prizeOptions.length - 1]
+}
+
+// 記錄卡片到歷史紀錄
+function recordCard(card, resultStatus, prizeAmount = '') {
+  // card: { name, image }
+  const cardRecord = JSON.parse(localStorage.getItem('cardRecord') || '[]')
+  cardRecord.push({
+    id: Date.now(),
+    name: card.name,
+    img: card.image,
+    status: resultStatus, // '已中獎'、'未中獎'、'待刮開'
+    amount: resultStatus === '已中獎' ? prizeAmount : ''
+  })
+  localStorage.setItem('cardRecord', JSON.stringify(cardRecord))
 }
 </script>
 
