@@ -7,17 +7,18 @@ import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/de
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 //ERC721
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-//import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-//import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721, ERC721URIStorage {
+
+contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage {
     event RequestSent(uint256 requestId, uint32 numWords);
     event RequestFulfilled(
         uint256 requestId,
         uint256[] randomWords,
         uint256 payment
     );
+    event PrizeClaimed(address user, uint256 tokenId, Prize prize, uint256 amount);
 
     struct RequestStatus {
         uint256 paid; // amount paid in link
@@ -49,15 +50,17 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
 
     // address WRAPPER - hardcoded for Sepolia
     address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+     // Metadata URI 
+    //string private _baseTokenURI = "https://api.yourdomain.com/nfts/luckyscratch/";
 
     constructor()
-        Ownable()
         VRFV2PlusWrapperConsumerBase(wrapperAddress)
+        ERC721("LuckyScratch", "LUCK")
+        Ownable(msg.sender) 
     {}
 
     function mint() external payable returns (uint256) {
-        require(msg.value <= 0.01 ether, "Not enough ETH"); //要求最低金額
-        require(msg.value == 0.01 ether, "Price is 0.01 ETH"); //確保金額是剛好的
+        require(msg.value >= 0.01 ether, "Not enough ETH"); //要求最低金額
         uint256 tokenId = nextTokenId++;
         _safeMint(msg.sender, tokenId);
 
@@ -68,7 +71,7 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
         platformFee += fee; //開發者的收入
 
         
-        uint256 requestId = requestRandomWords(numWords); // 發出 VRF 隨機數請求，回傳 requestId
+        uint256 requestId = requestRandomWords(true); // 發出 VRF 隨機數請求，回傳 requestId
         tokenIdToRequestId[tokenId] = requestId; //tokenId 與 requestId 的雙向對應
         requestIdToTokenId[requestId] = tokenId;
 
@@ -101,6 +104,7 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
             poolBalance -= prizeAmount;
             payable(msg.sender).transfer(prizeAmount);
         }
+        emit PrizeClaimed(msg.sender, tokenId, prize, prizeAmount);
     }
 
     function withdrawFee(address payable to, uint256 amount) external onlyOwner { //開發者用來領取10%的fee
@@ -111,7 +115,7 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
 
     function requestRandomWords(
         bool enableNativePayment
-    ) external onlyOwner returns (uint256) {
+    ) internal returns (uint256) {
         bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
             VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment})
         );
@@ -135,7 +139,7 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
         s_requests[requestId] = RequestStatus({
             paid: reqPrice,
             randomWords: new uint256[](0),
-            fulfilled: false
+            fulfilled: true
         });
         requestIds.push(requestId);
         lastRequestId = requestId;
@@ -153,7 +157,7 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
 
         uint256 tokenId = requestIdToTokenId[_requestId];
         if (tokenId != 0) { // 預設 uint 為 0，防呆
-            uint256 rand = (_randomWords[0] % 9999) + 1; //因為是256bits的數字，所以我只取後面的餘數 共1~10000
+            uint256 rand = (_randomWords[0] % 10000) + 1; //因為是256bits的數字，所以我只取後面的餘數 共1~10000
             tokenIdToRandomNumber[tokenId] = rand;
 
             // 分配獎項等級
@@ -191,17 +195,6 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
         return (request.paid, request.fulfilled, request.randomWords);
     }
 
-    /**
-     * Allow withdraw of Link tokens from the contract
-     */
-    function withdrawLink() public onlyOwner {
-        LinkTokenInterface link = LinkTokenInterface(linkAddress);
-        require(
-            link.transfer(msg.sender, link.balanceOf(address(this))),
-            "Unable to transfer"
-        );
-    }
-
     /// @notice withdrawNative withdraws the amount specified in amount to the owner
     /// @param amount the amount to withdraw, in wei
     function withdrawNative(uint256 amount) external onlyOwner {
@@ -215,6 +208,6 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, Ownable, ERC721,
     receive() external payable {
         emit Received(msg.sender, msg.value);
     }
-    
+
 }
 

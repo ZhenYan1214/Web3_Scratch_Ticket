@@ -1,19 +1,18 @@
-// scripts/deploy.js
-
-const hre = require("hardhat");
+const { ethers } = require("hardhat");
 
 async function main() {
-  const [deployer] = await hre.ethers.getSigners();
-  console.log("Deploying contracts with the account:", deployer.address);
+  // 這裡填你的合約名稱，通常不是 test，除非 contract test {...}
+  const Contract = await ethers.getContractFactory("test");
+  const contract = await Contract.deploy();
 
-  const DirectFundingConsumer = await hre.ethers.getContractFactory("DirectFundingConsumer");
-  const contract = await DirectFundingConsumer.deploy();
   await contract.deployed();
 
-  console.log("DirectFundingConsumer contract deployed to:", contract.address);
+  console.log("Deployed to:", contract.address);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
