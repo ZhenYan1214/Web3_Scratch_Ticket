@@ -4,6 +4,7 @@ import HomeView from '@/views/HomeView.vue'
 import BuyScratchCardView from '@/views/BuyScratchCardView.vue'
 import CardsView from '@/views/CardsView.vue'
 import Rules from '@/views/Rules.vue'
+import PrizePoolView from '@/views/PrizePoolView.vue'
 
 const routes = [
   {
@@ -11,7 +12,7 @@ const routes = [
     redirect: '/home'
   },
   /*
-    {
+    {*
     path: '/',
     name: 'website',
     component: Website
@@ -36,6 +37,11 @@ const routes = [
     path: '/rules',
     name: 'rules',
     component: Rules
+  },
+  {
+    path: '/prizepool',
+    name: 'PrizePool',
+    component: PrizePoolView
   }
 ]
 
