@@ -1,9 +1,9 @@
 <template>
   <!-- 首頁背景設定 -->
   <div class="min-h-screen bg-[#7c4585] overflow-hidden relative">  
-  
-<!--全頁金幣動畫：在圖層最下方 -->
-  <div class="absolute inset-0 pointer-events-none">
+    
+    <!--全頁金幣動畫：在圖層最下方 -->
+    <div class="absolute inset-0 pointer-events-none">
     <div v-for="i in 20" :key="i" class="coin-large absolute" :style="{
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
@@ -46,116 +46,87 @@
         </div>
         <div class="hidden md:flex space-x-8">
           <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
-        
+           <router-link to="/prizepool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
           <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">📜 規則說明</router-link>
         </div>
       </div>
     </nav>
 
+    <!-- 跑馬燈 -->
+    <div class="w-full bg-yellow-100/60 py-2 overflow-hidden marquee">
+      <div class="marquee-content text-[#7c4585] font-bold text-lg flex items-center">
+        <span v-for="(user, idx) in topUsers.slice(0, 8)" :key="idx" class="mx-8 whitespace-nowrap">
+          恭喜{{ user.name }} 刮中獎金 {{ user.amount }} ETH
+        </span>
+      </div>
+    </div>
+
+
     <!-- 主要內容區 -->
     <div class="container mx-auto px-4 py-6">
       <div class="flex flex-col lg:flex-row gap-8">
         <!-- 左側：土豆流氓和新年祝福 -->
-        <div class="lg:w-2/3 relative">
-          <div class="w-200 bg-[#7c4585]/80 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
-            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
+        <div class="lg:w-2/3 relative mx-auto">
+          <div class="w-200  bg-[#7c4585]/80 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
             <h1 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">✨ 好運刮刮樂 ✨</h1>
             <p class="text-2xl text-yellow-200 mb-8">試試手氣，下一個就是你！</p>
-            
             <!-- 土豆流氓圖片 -->
-            <div class="relative mx-auto w-200 h-200 mb-8">
-              <div class="absolute inset-0 bg-yellow-400/20 rounded-full animate-pulse"></div>
+            <div class="relative mx-auto w-200 h-50 mb-8">
+              <div class="absolute top-1/2 left-1/2 w-200 h-96 -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full animate-pulse"></div>
               <img 
                 src="/images/money2.jpg" 
                 alt="戴墨鏡的土豆流氓" 
                 class="w-full h-full object-contain animate-bounce"
               />
             </div>
-            
-           
-            
-
-            <button class="buy-button" @click="$router.push('/buy')">
-              <span class="text-3xl mr-2">🎫</span>
-                立即購買刮刮樂
-              </button>
-          
-          </div>
-        </div>
-        
-        <!-- 右側：排行榜 -->
-        <div class="lg:w-1/3">
-          <div class="bg-[#7c4585]/80 rounded-2xl shadow-2xl p-6 border-2 border-yellow-400/50 backdrop-blur-sm">
-            <h2 class="text-3xl font-bold text-yellow-400 mb-6 text-center">🏆 神秘榜單 🏆</h2>
-            
-            <div class="space-y-4">
-              <div v-for="(user, index) in topUsers.slice(0,5)" :key="index" 
-                class="flex items-center p-4 rounded-xl transition-all hover:transform hover:scale-102 bg-gradient-to-r" 
-                :class="[
-                  index === 0 ? 'from-yellow-500/20 to-yellow-600/20 border border-yellow-400/50' : 
-                  index === 1 ? 'from-[#7c4585]/20 to-[#7c4585]/30 border border-[#7c4585]/50' : 
-                  index === 2 ? 'from-[#7c4585]/10 to-[#7c4585]/20 border border-[#7c4585]/30' : 
-                  'from-[#7c4585]/5 to-[#7c4585]/10 border border-[#7c4585]/20'
-                ]"
-              >
-                <div class="w-10 h-10 flex items-center justify-center rounded-full mr-4 text-xl"
-                  :class="[
-                    index === 0 ? 'bg-yellow-500 text-[#7c4585]' : 
-                    index === 1 ? 'bg-[#7c4585] text-yellow-400' : 
-                    index === 2 ? 'bg-[#7c4585]/80 text-yellow-400' : 
-                    'bg-[#7c4585]/60 text-yellow-400'
-                  ]"
-                >
-                  {{ ['🥇', '🥈', '🥉'][index] || (index + 1) }}
-                </div>
-                <div class="flex-1">
-                  <div class="font-bold text-lg text-yellow-100">{{ user.name }}</div>
-                  <div class="text-yellow-400 font-medium">{{ user.amount }} ETH</div>
-                </div>
-                <div class="text-yellow-400">
-                  <span v-if="index < 3" class="text-2xl">✨</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mt-6 text-center">
-              <button class="text-yellow-400 hover:text-yellow-300 transition-colors text-lg font-bold">
-                🎯 查看完整榜單
-              </button>
+            <!-- 新增獎池金額區塊 -->
+            <div class="bg-yellow-100/90 border-2 border-yellow-400 rounded-xl shadow-lg px-8 py-6 mb-6 flex flex-col items-center">
+              <div class="text-2xl font-bold text-[#7c4585] mb-2">目前獎池金額</div>
+              <div class="text-4xl font-extrabold text-yellow-500 mb-1">10.00 ETH</div>
+              <div class="text-[#7c4585] text-lg">獎池會隨著購買自動累積，快來試手氣！</div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- 刮刮樂選擇彈窗 -->
-  <ScratchCardModal
-    :isVisible="isModalVisible"
-    :cards="scratchCards"
-    @close="isModalVisible = false"
-    @select="handleCardSelect"
-  />
+    <!-- 刮刮樂選擇彈窗 -->
+    <ScratchCardModal
+      :isVisible="isModalVisible"
+      :cards="scratchCards"
+      @close="isModalVisible = false"
+      @select="handleCardSelect"
+    />
 
-  <!-- 刮刮樂動畫 -->
-  <div v-if="selectedCard" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="relative bg-white rounded-lg p-6 shadow-lg w-96">
-      <h2 class="text-2xl font-bold text-center mb-4">刮開你的刮刮樂！</h2>
-      <div class="relative w-64 h-96 mx-auto">
-        <img :src="selectedCard.image" alt="刮刮樂" class="w-full h-full object-cover" />
-        <canvas
-          ref="scratchCanvas"
-          class="absolute inset-0"
-          @mousedown="startScratching"
-          @mousemove="scratch"
-          @mouseup="stopScratching"
-          @mouseleave="stopScratching"
-        ></canvas>
+    <!-- 刮刮樂動畫 -->
+    <div v-if="selectedCard" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="relative bg-white rounded-lg p-6 shadow-lg w-96">
+        <h2 class="text-2xl font-bold text-center mb-4">刮開你的刮刮樂！</h2>
+        <div class="relative w-64 h-96 mx-auto">
+          <img :src="selectedCard.image" alt="刮刮樂" class="w-full h-full object-cover" />
+          <canvas
+            ref="scratchCanvas"
+            class="absolute inset-0"
+            @mousedown="startScratching"
+            @mousemove="scratch"
+            @mouseup="stopScratching"
+            @mouseleave="stopScratching"
+          ></canvas>
+        </div>
+        <button @click="resetScratchCard" class="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+          完成
+        </button>
       </div>
-      <button @click="resetScratchCard" class="mt-4 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
-        完成
-      </button>
     </div>
+
+    <!-- 固定在右下角的購買刮刮樂按鈕 -->
+    <button
+      class="fixed bottom-6 right-6 z-50 bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-6 py-4 rounded-lg shadow-lg text-xl flex items-center gap-2 buy-float-btn"
+      @click="$router.push('/buy')"
+    >
+      <span class="text-2xl">🎫</span> 購買刮刮樂
+    </button>
   </div>
 </template>
 
@@ -311,4 +282,29 @@ onMounted(() => {
   }
 }
 
+/* 跑馬燈樣式 */
+.marquee {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  height: 2.5rem;
+}
+.marquee-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 36s linear infinite; /* 原本是18s，改成36s會變慢一半 */
+}
+@keyframes marquee {
+  0% { transform: translateX(100%);}
+  100% { transform: translateX(-100%);}
+}
+
+/* 浮動購買按鈕樣式 */
+.buy-float-btn {
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  box-shadow: 0 4px 24px 0 rgba(124, 69, 133, 0.15);
+}
+.buy-float-btn:hover {
+  transform: scale(1.07);
+}
 </style>

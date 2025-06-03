@@ -11,6 +11,7 @@
         <div class="hidden md:flex space-x-8">
           <router-link to="/home" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
           <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
+          <router-link to="/prizepool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
           <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">📜 規則說明</router-link>
         </div>
       </div>
