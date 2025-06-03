@@ -9,15 +9,11 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 //ERC721
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-
-contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage {
+contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, ReentrancyGuard  {
     event RequestSent(uint256 requestId, uint32 numWords);
-    event RequestFulfilled(
-        uint256 requestId,
-        uint256[] randomWords,
-        uint256 payment
-    );
+    event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
     event PrizeClaimed(address user, uint256 tokenId, Prize prize, uint256 amount);
 
     struct RequestStatus {
@@ -42,16 +38,23 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage {
     uint32 public callbackGasLimit = 100000;
     uint16 public requestConfirmations = 3;
 
-    //刮刮樂
+    //刮刮樂遊戲配置
     uint32 public numWords = 1;
     uint256 public nextTokenId = 1;
     uint256 public poolBalance; // 獎池
     uint256 public platformFee; // 目前累積的 fee
+    uint256 public constant TICKET_PRICE = 0.01 ether;
+    uint256 public constant POOL_PERCENTAGE = 90;
+    uint256 public constant PLATFORM_FEE_PERCENTAGE = 10;
+
+    // 獎項百分比配置
+    uint256 public constant GRAND_PRIZE_PERCENTAGE = 40;      // 40%
+    uint256 public constant FIRST_PRIZE_PERCENTAGE = 15;      // 15%  
+    uint256 public constant SECOND_PRIZE_PERCENTAGE = 5;      // 5%
+    uint256 public constant CONSOLATION_PRIZE_PERCENTAGE = 2; // 2%
 
     // address WRAPPER - hardcoded for Sepolia
     address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
-     // Metadata URI 
-    //string private _baseTokenURI = "https://api.yourdomain.com/nfts/luckyscratch/";
 
     constructor()
         VRFV2PlusWrapperConsumerBase(wrapperAddress)
@@ -59,20 +62,26 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage {
         Ownable(msg.sender) 
     {}
 
-    function mint() external payable returns (uint256) {
-        require(msg.value >= 0.01 ether, "Not enough ETH"); //要求最低金額
+     function mint() external payable returns (uint256) {
+        require(msg.value >= TICKET_PRICE, "Insufficient payment");
+        
         uint256 tokenId = nextTokenId++;
         _safeMint(msg.sender, tokenId);
 
-        uint256 price = 0.01 ether; // 刮刮樂價格
-        uint256 toPool = (price * 90) / 100; // 90% 進獎池
-        uint256 fee = price - toPool;        // 10% 作為平台抽成
-        poolBalance += toPool;               // 加到獎池
-        platformFee += fee; //開發者的收入
+        // 分配資金
+        uint256 toPool = (TICKET_PRICE * POOL_PERCENTAGE) / 100;
+        uint256 fee = TICKET_PRICE - toPool;
+        poolBalance += toPool;
+        platformFee += fee;
 
-        
-        uint256 requestId = requestRandomWords(true); // 發出 VRF 隨機數請求，回傳 requestId
-        tokenIdToRequestId[tokenId] = requestId; //tokenId 與 requestId 的雙向對應
+        // 退還多餘款項
+        if (msg.value > TICKET_PRICE) {
+            payable(msg.sender).transfer(msg.value - TICKET_PRICE);
+        }
+
+        // 請求隨機數
+        uint256 requestId = requestRandomWords(true);
+        tokenIdToRequestId[tokenId] = requestId;
         requestIdToTokenId[requestId] = tokenId;
 
         return tokenId;
@@ -89,26 +98,31 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage {
         uint256 prizeAmount = 0;
 
         //獎金分配
-        if (prize == Prize.Grand) {
-            prizeAmount = (poolBalance * 40) / 100; // 40% of pool
-        } else if (prize == Prize.First) {
-            prizeAmount = (poolBalance * 15) / 100; // 15% of pool
-        } else if (prize == Prize.Second) {
-            prizeAmount = (poolBalance * 5) / 100;  // 5% of pool
-        } else if (prize == Prize.Consolation) {
-            prizeAmount = 0.005 ether;              // 半價
-        }
-
-        // 發獎：確認獎池足夠，才發
-        if (prizeAmount > 0 && poolBalance >= prizeAmount) {
+        if (prizeAmount > 0) {
             poolBalance -= prizeAmount;
             payable(msg.sender).transfer(prizeAmount);
         }
+        
         emit PrizeClaimed(msg.sender, tokenId, prize, prizeAmount);
     }
 
-    function withdrawFee(address payable to, uint256 amount) external onlyOwner { //開發者用來領取10%的fee
-        require(amount <= platformFee, "Not enough fee");
+    function calculatePrizeAmount(Prize prize) public view returns (uint256) {
+        if (prize == Prize.Grand) {
+            return (poolBalance * GRAND_PRIZE_PERCENTAGE) / 100;
+        } else if (prize == Prize.First) {
+            return (poolBalance * FIRST_PRIZE_PERCENTAGE) / 100;
+        } else if (prize == Prize.Second) {
+            return (poolBalance * SECOND_PRIZE_PERCENTAGE) / 100;
+        } else if (prize == Prize.Consolation) {
+            return (poolBalance * CONSOLATION_PRIZE_PERCENTAGE) / 100;
+        }
+        return 0;
+    }
+
+    function withdrawFee(address payable to, uint256 amount) external onlyOwner nonReentrant { //開發者領取的收益
+        require(amount <= platformFee, "Insufficient fee balance");
+        require(to != address(0), "Invalid address");
+        
         platformFee -= amount;
         to.transfer(amount);
     }
@@ -143,6 +157,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage {
         });
         requestIds.push(requestId);
         lastRequestId = requestId;
+
         emit RequestSent(requestId, numWords);
         return requestId;
     }
@@ -197,10 +212,40 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage {
 
     /// @notice withdrawNative withdraws the amount specified in amount to the owner
     /// @param amount the amount to withdraw, in wei
+
     function withdrawNative(uint256 amount) external onlyOwner {
+        require(amount <= address(this).balance, "Insufficient contract balance");
         (bool success, ) = payable(owner()).call{value: amount}("");
         // solhint-disable-next-line gas-custom-errors
         require(success, "withdrawNative failed");
+    }
+    // 開發者注入獎池資金
+    function addToPool() external payable onlyOwner {
+        require(msg.value > 0, "Must send ETH");
+        poolBalance += msg.value;
+    }
+
+    // 前端查詢函數用
+    function getTokenInfo(uint256 tokenId) external view returns (
+        bool revealed,
+        uint256 randomNumber,
+        Prize prize,
+        uint256 potentialPrize
+    ) {
+        revealed = isRevealed[tokenId];
+        randomNumber = tokenIdToRandomNumber[tokenId];
+        prize = tokenIdToPrize[tokenId];
+        potentialPrize = calculatePrizeAmount(prize);
+    }
+
+    function getContractStats() external view returns (
+        uint256 totalSupply,
+        uint256 currentPoolBalance,
+        uint256 currentPlatformFee
+    ) {
+        totalSupply = nextTokenId - 1;
+        currentPoolBalance = poolBalance;
+        currentPlatformFee = platformFee;
     }
 
     event Received(address, uint256);
