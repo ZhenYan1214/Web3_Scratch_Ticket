@@ -46,8 +46,7 @@
         </div>
         <div class="hidden md:flex space-x-8">
           <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
-           <router-link to="/prizepool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
-          <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">📜 規則說明</router-link>
+          <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池說明</router-link>
         </div>
       </div>
     </nav>
@@ -63,28 +62,28 @@
 
 
     <!-- 主要內容區 -->
-    <div class="container mx-auto px-4 py-6">
-      <div class="flex flex-col lg:flex-row gap-8">
+    <div class="w-full px-2 py-4">
+      <div class="flex flex-col lg:flex-row gap-4">
         <!-- 左側：土豆流氓和新年祝福 -->
-        <div class="lg:w-2/3 relative mx-auto">
-          <div class="w-200  bg-[#7c4585]/80 rounded-2xl shadow-2xl p-8 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
+        <div class="max-w-3xl mx-auto relative">
+          <div class="bg-[#7c4585]/80 rounded-2xl shadow-2xl p-3 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
-            <h1 class="text-4xl md:text-5xl font-bold text-yellow-400 mb-4">✨ 好運刮刮樂 ✨</h1>
-            <p class="text-2xl text-yellow-200 mb-8">試試手氣，下一個就是你！</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-yellow-400 mb-2">✨ 好運刮刮樂 ✨</h1>
+            <p class="text-lg text-yellow-200 mb-4">試試手氣，下一個就是你！</p>
             <!-- 土豆流氓圖片 -->
-            <div class="relative mx-auto w-200 h-50 mb-8">
-              <div class="absolute top-1/2 left-1/2 w-200 h-96 -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full animate-pulse"></div>
+            <div class="relative mx-auto w-64 h-48 mb-4">
+              <div class="absolute top-1/2 left-1/2 w-40 h-32 -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full animate-pulse"></div>
               <img 
                 src="/images/money2.jpg" 
                 alt="戴墨鏡的土豆流氓" 
                 class="w-full h-full object-contain animate-bounce"
               />
             </div>
-            <!-- 新增獎池金額區塊 -->
-            <div class="bg-yellow-100/90 border-2 border-yellow-400 rounded-xl shadow-lg px-8 py-6 mb-6 flex flex-col items-center">
-              <div class="text-2xl font-bold text-[#7c4585] mb-2">目前獎池金額</div>
-              <div class="text-4xl font-extrabold text-yellow-500 mb-1">10.00 ETH</div>
-              <div class="text-[#7c4585] text-lg">獎池會隨著購買自動累積，快來試手氣！</div>
+            <!-- 獎池金額區塊 -->
+            <div class="bg-yellow-100/90 border-2 border-yellow-400 rounded-xl shadow-lg px-4 py-3 mb-2 flex flex-col items-center">
+              <div class="text-lg font-bold text-[#7c4585] mb-1">目前獎池金額</div>
+              <div class="text-2xl font-extrabold text-yellow-500 mb-1">10.00 ETH</div>
+              <div class="text-[#7c4585] text-base">獎池會隨著購買自動累積，快來試手氣！</div>
             </div>
           </div>
         </div>
@@ -120,13 +119,13 @@
       </div>
     </div>
 
-    <!-- 固定在右下角的購買刮刮樂按鈕 -->
-    <button
-      class="fixed bottom-6 right-6 z-50 bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-6 py-4 rounded-lg shadow-lg text-xl flex items-center gap-2 buy-float-btn"
-      @click="$router.push('/buy')"
-    >
-      <span class="text-2xl">🎫</span> 購買刮刮樂
-    </button>
+    <!-- 固定在右下角的購買刮刮樂按鈕（放大版） -->
+      <button
+  class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[999] bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-5 py-3 sm:px-6 sm:py-4 rounded-lg shadow-lg text-lg sm:text-xl flex items-center gap-2 buy-float-btn"
+  @click="$router.push('/buy')"
+>
+  <span class="text-3xl sm:text-4xl">🎫</span> 購買刮刮樂
+</button>
   </div>
 </template>
 
@@ -301,10 +300,42 @@ onMounted(() => {
 
 /* 浮動購買按鈕樣式 */
 .buy-float-btn {
+  position: relative;
+  overflow: hidden;
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-  box-shadow: 0 4px 24px 0 rgba(124, 69, 133, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(124, 69, 133, 0.18);
+  font-size: 2rem;
+  padding: 1.5rem 2.5rem;
 }
+
+.buy-float-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -30%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.2) 100%);
+  transform: skewX(-20deg);
+  animation: shine 2.2s infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
 .buy-float-btn:hover {
-  transform: scale(1.07);
+  transform: scale(1.12);
+}
+.buy-float-btn {
+  position: fixed !important;
+  right: 1rem !important;
+  bottom: 1rem !important;
 }
 </style>

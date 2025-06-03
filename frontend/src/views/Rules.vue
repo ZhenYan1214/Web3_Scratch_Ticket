@@ -12,8 +12,8 @@
           <router-link to="/home" class="hover:text-yellow-400 transition-colors text-lg">🏠 首頁</router-link>
           <router-link to="/cards" class="hover:text-yellow-400 transition-colors text-lg">🃏 我的卡片</router-link>
           <router-link to="/buy" class="hover:text-yellow-400 transition-colors text-lg">🛒 購買刮刮樂</router-link>
-           <router-link to="/prizepool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池資訊</router-link>
-          <router-link to="/rules" class="hover:text-yellow-400 transition-colors text-lg font-bold">📜 規則說明</router-link>
+           <router-link to="/prizepool" class="hover:text-yellow-400 transition-colors text-lg">💰 獎池說明</router-link>
+          
         </div>
       </div>
     </nav>
@@ -41,61 +41,45 @@
     <!-- 主要內容 -->
     <div class="relative z-10 container mx-auto px-4 py-12 min-h-screen flex flex-col items-center justify-center">
       <!-- Logo 區域 -->
-      <div class="text-center mb-16 transform hover:scale-105 transition-transform duration-500">
+      <div class="text-center mb-12 transform hover:scale-105 transition-transform duration-500">
         <div class="relative inline-block">
-          <h1 class="text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
+          <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
             財神存錢罐
           </h1>
-        </div>
-        <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
-          Web3 時代的智能理財新選擇
-        </p>
-      </div>
-
-      <!-- 特色卡片 -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 w-full max-w-6xl">
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🔒</span>
-            </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">安全可靠</h3>
-            <p class="text-red-100">智能合約審計，資產安全無憂</p>
-          </div>
-          <div class="card-glow"></div>
-        </div>
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">💰</span>
-            </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">收益豐厚</h3>
-            <p class="text-red-100">DeFi 收益優化，財運滾滾來</p>
-          </div>
-          <div class="card-glow"></div>
-        </div>
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🚀</span>
-            </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">創新科技</h3>
-            <p class="text-red-100">區塊鏈技術，引領未來理財</p>
-          </div>
-          <div class="card-glow"></div>
+          <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
+            Web3 時代的智能理財新選擇
+          </p>
         </div>
       </div>
 
-      <!-- 規則說明 -->
-      <div class="text-center space-y-6">
-        <h2 class="text-3xl font-bold text-yellow-300 mb-4">規則說明</h2>
-        <ul class="text-xl text-yellow-100 space-y-2">
-          <li>1. 連接錢包後可購買刮刮樂，每張 0.01 ETH。</li>
-          <li>2. 刮開刮刮樂有機會獲得不同獎項，最高可得金幣大放送獎！</li>
-          <li>3. 每日抽取八位幸運用戶，獎池金額每日更新。</li>
-          <li>4. 所有過程皆由智能合約自動執行，公平公正。</li>
-        </ul>
+      <!-- 兩大區塊左右排列 -->
+      <div class="w-full flex flex-col md:flex-row gap-8 items-stretch justify-center mb-12">
+        <!-- 獎池資訊 -->
+        <div class="flex-1 bg-white/90 rounded-lg shadow-lg p-8 max-w-xl mx-auto flex flex-col">
+          <h2 class="text-3xl font-bold mb-6 text-center" style="color: #7c4585;">🏆 獎池資訊</h2>
+          <span>
+            <h3 class="text-2xl font-bold mb-4 text-center" style="color: #7c4585;">目前獎池總額</h3>
+            <p class="text-3xl font-extrabold text-yellow-500 mb-6 text-center">10.00 ETH</p>
+          </span>
+          <ul class="list-disc pl-6 text-lg" style="color: #7c4585;">
+            <li>金幣大放送：可獲得獎池金額的40%</li>
+            <li>好運滿滿獎：可獲得獎池金額的15%</li>
+            <li>小確幸獎：可獲得獎池金額的5%</li>
+            <li>回饋獎：可獲得獎池金額的2%</li>
+          </ul>
+        </div>
+        <!-- 規則說明 -->
+        <div class="flex-1 bg-white/90 rounded-lg shadow-lg p-8 max-w-xl mx-auto flex flex-col">
+          <h2 class="text-3xl font-bold mb-6 text-center" style="color: #7c4585;">📜 規則說明</h2>
+          <ul class="list-decimal pl-6 text-lg space-y-3" style="color: #7c4585;">
+            <li>連接錢包後可購買刮刮樂，每張 0.01 ETH。</li>
+            <li>刮開刮刮樂有機會獲得不同獎項，最高可得金幣大放送獎！</li>
+            <li>每日抽取八位幸運用戶，獎池金額每日更新。</li>
+            <li>所有過程皆由智能合約自動執行，公平公正。</li>
+          </ul>
+        </div>
       </div>
+  
 
       <!-- 底部資訊 -->
       <div class="absolute bottom-8 left-0 right-0 text-center">
