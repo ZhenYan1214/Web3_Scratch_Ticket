@@ -52,8 +52,8 @@
     </nav>
 
     <!-- 跑馬燈 -->
-    <div class="w-full bg-yellow-100/60 py-2 overflow-hidden marquee">
-      <div class="marquee-content text-[#7c4585] font-bold text-lg flex items-center">
+    <div class="w-full bg-red-300/80 py-2 overflow-hidden marquee">
+      <div class="marquee-content text-[#AE0000] font-bold text-lg flex items-center">
         <span v-for="(user, idx) in topUsers.slice(0, 8)" :key="idx" class="mx-8 whitespace-nowrap">
           恭喜{{ user.name }} 刮中獎金 {{ user.amount }} ETH
         </span>
@@ -120,18 +120,20 @@
     </div>
 
     <!-- 固定在右下角的購買刮刮樂按鈕（放大版） -->
-      <button
-  class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[999] bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-5 py-3 sm:px-6 sm:py-4 rounded-lg shadow-lg text-lg sm:text-xl flex items-center gap-2 buy-float-btn"
-  @click="$router.push('/buy')"
->
-  <span class="text-3xl sm:text-4xl">🎫</span> 購買刮刮樂
-</button>
+    <button
+      class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[999] bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-5 py-3 sm:px-6 sm:py-4 rounded-lg shadow-lg text-lg sm:text-xl flex items-center gap-2 buy-float-btn"
+      @click="connectWalletAndGoBuy"
+      :disabled="isConnecting"
+    >
+      <span class="text-3xl sm:text-4xl">🎫</span> 購買刮刮樂
+    </button>
   </div>
 </template>
 
 
 <script setup>
   import { ref, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
   import '@/assets/styles/buy.css'  
   import ScratchCardModal from '@/components/ScratchCardModal.vue'
 
@@ -145,7 +147,31 @@
   delay: Math.random() * 5,
   duration: 3 + Math.random() * 2
   }))
+  
 
+  const router = useRouter()
+  const isConnecting = ref(false)
+
+  async function connectWalletAndGoBuy() {
+    if (!window.ethereum) {
+      alert('請先安裝 MetaMask 錢包！')
+      return
+    }
+    isConnecting.value = true
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      if (accounts && accounts.length > 0) {
+        // 連接成功再跳轉
+        router.push('/buy')
+      } else {
+        alert('未取得錢包地址')
+      }
+    } catch (e) {
+      alert('連接錢包失敗')
+    } finally {
+      isConnecting.value = false
+    }
+  }
   
 
 // 排行榜數據
@@ -213,13 +239,13 @@ onMounted(() => {
 .coin-large {
   animation: float 3s ease-in-out infinite;
   opacity: 0.7;
-  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+  filter: drop-shadow(0 0 8px rgba(214, 26, 9, 0.5));
 }
 
 .coin-small {
   animation: spin 4s linear infinite;
   opacity: 0.5;
-  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
+  filter: drop-shadow(0 0 5px rgba(208, 75, 63, 0.3));
 }
 
 @keyframes float {
