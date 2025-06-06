@@ -95,10 +95,11 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         isRevealed[tokenId] = true; // 標記已揭曉
 
         Prize prize = tokenIdToPrize[tokenId];
-        uint256 prizeAmount = 0;
+        uint256 prizeAmount = calculatePrizeAmount(prize);
 
         //獎金分配
         if (prizeAmount > 0) {
+            require(poolBalance >= prizeAmount, "Insufficient pool balance");
             poolBalance -= prizeAmount;
             payable(msg.sender).transfer(prizeAmount);
         }
