@@ -70,13 +70,14 @@
           <span class="text-4xl font-extrabold text-yellow-500 mb-1">10.00 ETH</span>
         </div>
         <!-- 跳動的土豆流氓圖片（置中） -->
-        <div class="flex justify-center items-center w-full ">
-          <img
-            src="/images/money2.jpg"
-            alt="戴墨鏡的土豆流氓"
-            class="w-[80%] max-w-lg h-auto object-contain animate-bounce-soft mx-auto"
-          />
-        </div>
+        <div class="relative mx-auto mb-8 w-[500px] h-[500px] max-w-[90vw] max-h-[90vw]">
+              <div class="absolute inset-0 bg-yellow-400/20 rounded-full animate-pulse"></div>
+              <img 
+                src="/images/money2.jpg" 
+                alt="主畫面的狐狸財神爺" 
+                class="w-full h-full object-contain animate-bounce"
+              />
+        </div> 
         <!-- 購買刮刮樂按鈕（移到圖片下方，並用static讓它不再浮動） -->
         <button
           class="buy-float-btn static relative mx-auto mt-2 bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-16 py-8 rounded-2xl shadow-2xl text-4xl flex items-center gap-4"
