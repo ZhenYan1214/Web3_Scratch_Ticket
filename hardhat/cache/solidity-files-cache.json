@@ -261,8 +261,8 @@
       ]
     },
     "C:\\Users\\Zhenyan\\Desktop\\刮刮樂\\hardhat\\contracts\\test.sol": {
-      "lastModificationDate": 1748949167926,
-      "contentHash": "c3de05eaac734dffd315e14022ff13ac",
+      "lastModificationDate": 1749188562419,
+      "contentHash": "c3b310a1d7c39498f2e6854f674aa1a3",
       "sourceName": "contracts/test.sol",
       "solcConfig": {
         "version": "0.8.20",

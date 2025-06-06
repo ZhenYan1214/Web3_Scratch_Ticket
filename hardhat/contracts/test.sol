@@ -95,10 +95,11 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         isRevealed[tokenId] = true; // 標記已揭曉
 
         Prize prize = tokenIdToPrize[tokenId];
-        uint256 prizeAmount = 0;
+        uint256 prizeAmount = calculatePrizeAmount(prize);
 
         //獎金分配
         if (prizeAmount > 0) {
+            require(poolBalance >= prizeAmount, "Insufficient pool balance");
             poolBalance -= prizeAmount;
             payable(msg.sender).transfer(prizeAmount);
         }
@@ -106,7 +107,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         emit PrizeClaimed(msg.sender, tokenId, prize, prizeAmount);
     }
 
-    function calculatePrizeAmount(Prize prize) public view returns (uint256) {
+    function calculatePrizeAmount(Prize prize) public view returns (uint256) { //計算中獎金額
         if (prize == Prize.Grand) {
             return (poolBalance * GRAND_PRIZE_PERCENTAGE) / 100;
         } else if (prize == Prize.First) {
@@ -127,7 +128,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         to.transfer(amount);
     }
 
-    function requestRandomWords(
+    function requestRandomWords( //發送請求隨機數字
         bool enableNativePayment
     ) internal returns (uint256) {
         bytes memory extraArgs = VRFV2PlusClient._argsToBytes(
@@ -162,7 +163,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         return requestId;
     }
 
-    function fulfillRandomWords(
+    function fulfillRandomWords( // 生成隨機數字
         uint256 _requestId,
         uint256[] memory _randomWords
     ) internal override {
@@ -198,7 +199,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         );
     }
 
-    function getRequestStatus(
+    function getRequestStatus( // 查看狀況
         uint256 _requestId
     )
         external
@@ -213,7 +214,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
     /// @notice withdrawNative withdraws the amount specified in amount to the owner
     /// @param amount the amount to withdraw, in wei
 
-    function withdrawNative(uint256 amount) external onlyOwner {
+    function withdrawNative(uint256 amount) external onlyOwner { 
         require(amount <= address(this).balance, "Insufficient contract balance");
         (bool success, ) = payable(owner()).call{value: amount}("");
         // solhint-disable-next-line gas-custom-errors
@@ -238,7 +239,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         potentialPrize = calculatePrizeAmount(prize);
     }
 
-    function getContractStats() external view returns (
+    function getContractStats() external view returns (  //查看合約狀況
         uint256 totalSupply,
         uint256 currentPoolBalance,
         uint256 currentPlatformFee

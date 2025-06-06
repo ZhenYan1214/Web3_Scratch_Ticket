@@ -3,7 +3,7 @@ const { ethers } = hre;
 
 // 配置
 const CONFIG = {
-    contractAddress: '0x543c8622b80D87510C2473d99500197f9E483184',
+    contractAddress: '0xF689Df063700A11b5916309c382Ed5d93401927B',
     // 使用 Hardhat 配置的網路，不需要額外設定 RPC
     privateKey: process.env.PRIVATE_KEY, // 請替換成你的私鑰，或使用 Hardhat 帳戶
 };
@@ -97,7 +97,7 @@ class ContractTester {
     async testAddToPool() {
         await this.log("💰 測試添加資金到獎池...");
         try {
-            const amount = "0.1"; // 添加 0.1 ETH
+            const amount = "0.01"; 
             const tx = await this.contract.addToPool({
                 value: this.parseEther(amount)
             });
