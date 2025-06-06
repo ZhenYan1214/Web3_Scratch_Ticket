@@ -52,7 +52,7 @@
     </nav>
 
     <!-- 跑馬燈 -->
-    <div class="w-full bg-red-300/80 py-2 overflow-hidden marquee">
+    <div class="w-full bg-red-300/80 py-2 overflow-hidden marquee mb-5">
       <div class="marquee-content text-[#AE0000] font-bold text-lg flex items-center">
         <span v-for="(user, idx) in topUsers.slice(0, 8)" :key="idx" class="mx-8 whitespace-nowrap">
           恭喜{{ user.name }} 刮中獎金 {{ user.amount }} ETH
@@ -62,31 +62,30 @@
 
 
     <!-- 主要內容區 -->
-    <div class="w-full px-2 py-4">
-      <div class="flex flex-col lg:flex-row gap-4">
-        <!-- 左側：土豆流氓和新年祝福 -->
-        <div class="max-w-3xl mx-auto relative">
-          <div class="bg-[#7c4585]/80 rounded-2xl shadow-2xl p-3 text-center relative overflow-hidden border-2 border-yellow-400/50 backdrop-blur-sm">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
-            <h1 class="text-2xl md:text-3xl font-bold text-yellow-400 mb-2">✨ 好運刮刮樂 ✨</h1>
-            <p class="text-lg text-yellow-200 mb-4">試試手氣，下一個就是你！</p>
-            <!-- 土豆流氓圖片 -->
-            <div class="relative mx-auto w-64 h-48 mb-4">
-              <div class="absolute top-1/2 left-1/2 w-40 h-32 -translate-x-1/2 -translate-y-1/2 bg-yellow-400/20 rounded-full animate-pulse"></div>
-              <img 
-                src="/images/money2.jpg" 
-                alt="戴墨鏡的土豆流氓" 
-                class="w-full h-full object-contain animate-bounce"
-              />
-            </div>
-            <!-- 獎池金額區塊 -->
-            <div class="bg-yellow-100/90 border-2 border-yellow-400 rounded-xl shadow-lg px-4 py-3 mb-2 flex flex-col items-center">
-              <div class="text-lg font-bold text-[#7c4585] mb-1">目前獎池金額</div>
-              <div class="text-2xl font-extrabold text-yellow-500 mb-1">10.00 ETH</div>
-              <div class="text-[#7c4585] text-base">獎池會隨著購買自動累積，快來試手氣！</div>
-            </div>
-          </div>
+    <div class="flex justify-center items-center w-full min-h-[80vh] px-2">
+      <div class="flex flex-col items-center justify-center w-full">
+        <!-- 獎池金額區塊（在圖片上方，置中） -->
+        <div>
+          <span class="text-2xl font-bold text-yellow-100 mb-2">目前獎池金額：</span>
+          <span class="text-4xl font-extrabold text-yellow-500 mb-1">10.00 ETH</span>
         </div>
+        <!-- 跳動的土豆流氓圖片（置中） -->
+        <div class="flex justify-center items-center w-full ">
+          <img
+            src="/images/money2.jpg"
+            alt="戴墨鏡的土豆流氓"
+            class="w-[80%] max-w-lg h-auto object-contain animate-bounce-soft mx-auto"
+          />
+        </div>
+        <!-- 購買刮刮樂按鈕（移到圖片下方，並用static讓它不再浮動） -->
+        <button
+          class="buy-float-btn static relative mx-auto mt-2 bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-16 py-8 rounded-2xl shadow-2xl text-4xl flex items-center gap-4"
+          @click="connectWalletAndGoBuy"
+          :disabled="isConnecting"
+          style="position: static !important; right: auto !important; bottom: auto !important;"
+        >
+          <span class="text-5xl">🎫</span> 購買刮刮樂
+        </button>
       </div>
     </div>
 
@@ -119,14 +118,7 @@
       </div>
     </div>
 
-    <!-- 固定在右下角的購買刮刮樂按鈕（放大版） -->
-    <button
-      class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[999] bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-5 py-3 sm:px-6 sm:py-4 rounded-lg shadow-lg text-lg sm:text-xl flex items-center gap-2 buy-float-btn"
-      @click="connectWalletAndGoBuy"
-      :disabled="isConnecting"
-    >
-      <span class="text-3xl sm:text-4xl">🎫</span> 購買刮刮樂
-    </button>
+   
   </div>
 </template>
 
@@ -317,51 +309,38 @@ onMounted(() => {
 .marquee-content {
   display: inline-block;
   white-space: nowrap;
-  animation: marquee 36s linear infinite; /* 原本是18s，改成36s會變慢一半 */
+  animation: marquee 60s linear infinite; /* 原本是18s，改成36s會變慢一半 */
 }
 @keyframes marquee {
   0% { transform: translateX(100%);}
   100% { transform: translateX(-100%);}
 }
 
-/* 浮動購買按鈕樣式 */
-.buy-float-btn {
-  position: relative;
-  overflow: hidden;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-  box-shadow: 0 8px 32px 0 rgba(124, 69, 133, 0.18);
-  font-size: 2rem;
-  padding: 1.5rem 2.5rem;
-}
 
-.buy-float-btn::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -30%;
-  width: 60%;
-  height: 200%;
-  background: linear-gradient(120deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0.2) 100%);
-  transform: skewX(-20deg);
-  animation: shine 2.2s infinite;
-  pointer-events: none;
-}
 
-@keyframes shine {
-  0% {
-    left: -60%;
+/* 新增的動畫 */
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8,0,1,1);
   }
-  100% {
-    left: 120%;
+  50% {
+    transform: translateY(-16px); /* 柔和跳動 */
+    animation-timing-function: cubic-bezier(0,0,0.2,1);
   }
 }
+.animate-bounce-soft {
+  animation: bounce-soft 1.2s infinite;
+}
+@keyframes shine-border {
+  0% { box-shadow: 0 0 16px 4px #ffe066, 0 0 0 0 #ffd700; }
+  50% { box-shadow: 0 0 32px 8px #ffd700, 0 0 0 0 #ffe066; }
+  100% { box-shadow: 0 0 16px 4px #ffe066, 0 0 0 0 #ffd700; }
+}
+.animate-shine {
+  animation: shine-border 2s infinite;
+  border-radius: 1rem;
+  border: 4px solid transparent;
+}
 
-.buy-float-btn:hover {
-  transform: scale(1.12);
-}
-.buy-float-btn {
-  position: fixed !important;
-  right: 1rem !important;
-  bottom: 1rem !important;
-}
 </style>

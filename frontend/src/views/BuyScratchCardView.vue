@@ -68,6 +68,14 @@
       </div>
     </div>
 
+    <!-- loading動畫 -->
+    <div v-if="showLoading" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="flex flex-col items-center">
+        <div class="loader mb-4"></div>
+        <div class="text-yellow-100 text-xl font-bold">LOADING...</div>
+      </div>
+    </div>
+
     <!-- 刮刮樂動畫 -->
     <div v-if="showScratchModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="relative bg-white rounded-lg p-6 shadow-lg w-96">
@@ -135,6 +143,7 @@ const selectedCard = ref(null)
 const showPayModal = ref(false)
 const showAfterPay = ref(false)
 const showScratchModal = ref(false)
+const showLoading = ref(false)
 const scratchCanvas = ref(null)
 const prizeImage = ref('/images/prize.png')
 let isScratching = false
@@ -201,11 +210,15 @@ const cancelPay = () => {
 
 const showScratch = () => {
   showAfterPay.value = false
-  prizeResult.value = getRandomPrize()
-  showScratchModal.value = true
-  prizeGiven.value = false
-  scratchedPercent.value = 0
-  nextTick(drawMask)
+  showLoading.value = true
+  setTimeout(() => {
+    prizeResult.value = getRandomPrize()
+    showScratchModal.value = true
+    prizeGiven.value = false
+    scratchedPercent.value = 0
+    showLoading.value = false
+    nextTick(drawMask)
+  }, 60000) // 1分鐘loading動畫
 }
 
 
@@ -389,5 +402,17 @@ function recordCard(card, resultStatus, prizeAmount = '') {
 }
 .scratch-cursor {
   cursor: url('/images/finger.png') 16 16,auto;
+}
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #facc15;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
 }
 </style>
