@@ -71,13 +71,13 @@
         </div>
         <!-- 跳動的土豆流氓圖片（置中） -->
         <div class="relative mx-auto mb-8 w-[500px] h-[500px] max-w-[90vw] max-h-[90vw]">
-              <div class="absolute inset-0 bg-yellow-400/20 rounded-full animate-pulse"></div>
-              <img 
-                src="/images/money2.jpg" 
-                alt="主畫面的狐狸財神爺" 
-                class="w-full h-full object-contain animate-bounce"
-              />
-        </div> 
+          <div class="absolute inset-0 bg-yellow-400/20 rounded-full animate-pulse"></div>
+          <img 
+            src="/images/money2.jpg" 
+            alt="主畫面的狐狸財神爺" 
+            class="absolute inset-0 w-[80%] h-[80%] object-cover transform translate-x-[22%] translate-y-[8%] animate-bounce"
+          />
+        </div>
         <!-- 購買刮刮樂按鈕（移到圖片下方，並用static讓它不再浮動） -->
         <button
           class="buy-float-btn static relative mx-auto mt-2 bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-16 py-8 rounded-2xl shadow-2xl text-4xl flex items-center gap-4"

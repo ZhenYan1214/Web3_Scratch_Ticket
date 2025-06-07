@@ -127,6 +127,7 @@
 <script setup>
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { ethers } from 'ethers'
 
 const router = useRouter()
 const route = useRoute()
@@ -221,23 +222,6 @@ const showScratch = () => {
   }, 60000) // 1分鐘loading動畫
 }
 
-
-// 刪除這個舊的版本
-// function addCardToMyCards(card) {
-//   const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
-//   const newCard = {
-//     id: Date.now(),
-    // img: card.image,
-    // status: '待刮開',
-    // amount: '',
-    // name: card.name
-  // }
-  // myCards.push(newCard)
-  // localStorage.setItem('myCards', JSON.stringify(myCards))
-  // justAddedCardId.value = newCard.id // 標記剛加入的卡片
-// }
-
-// 保留這個新版（支援已中獎/未中獎/待刮開）
 function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
   const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
   const newCard = {
@@ -296,7 +280,6 @@ const stopScratching = () => {
   isScratching = false
 }
 
-// 根據底圖給予獎金（用彈窗顯示）
 function givePrizeByImage() {
   if (!prizeResult.value) return
   let status = '未中獎'
@@ -327,7 +310,6 @@ function givePrizeByImage() {
   showPrizeModal.value = true
 }
 
-// 關閉彈窗
 function closePrizeModal() {
   showPrizeModal.value = false
   showScratchModal.value = false   // 關閉中獎視窗時，同時關閉刮刮樂動畫
@@ -360,7 +342,6 @@ const getPrizeImage = (card) => {
   return card.image.replace('/images/', '/images/prizes/').replace('.png', '-prize.png')
 }
 
-// 機率抽獎
 function getRandomPrize() {
   const rand = Math.random() * 100
   let sum = 0
@@ -372,7 +353,6 @@ function getRandomPrize() {
   return prizeOptions[prizeOptions.length - 1]
 }
 
-// 記錄卡片到歷史紀錄
 function recordCard(card, resultStatus, prizeAmount = '') {
   // card: { name, image }
   const cardRecord = JSON.parse(localStorage.getItem('cardRecord') || '[]')
@@ -384,6 +364,28 @@ function recordCard(card, resultStatus, prizeAmount = '') {
     amount: resultStatus === '已中獎' ? prizeAmount : ''
   })
   localStorage.setItem('cardRecord', JSON.stringify(cardRecord))
+}
+
+// 合約資訊
+const CONTRACT_ADDRESS = '0xF689Df063700A11b5916309c382Ed5d93401927B'
+const CONTRACT_ABI = [ "function mint() payable returns (uint256)" ]
+
+async function buyCard() {
+  if (!window.ethereum) {
+    alert('請先安裝 MetaMask！')
+    return
+  }
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+    const tx = await contract.mint({ value: ethers.parseEther('0.01') })
+    await tx.wait()
+    alert('購買成功！')
+    showPayModal.value = false
+  } catch (e) {
+    alert('交易失敗：' + (e?.message || e))
+  }
 }
 </script>
 
