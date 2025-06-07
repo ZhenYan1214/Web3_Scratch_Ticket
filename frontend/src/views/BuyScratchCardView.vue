@@ -504,7 +504,7 @@ async function buyCard() {
     }
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
     console.log('發送 mint 交易...')
-    const tx = await contract.mint({ value: ethers.parseEther('0.01'), gasLimit: 300000 })
+    const tx = await contract.mint({ value: ethers.parseEther('0.01'), gasLimit: 500000 })
     console.log('交易已發送，hash:', tx.hash)
     console.log('等待交易確認...')
     await tx.wait()
