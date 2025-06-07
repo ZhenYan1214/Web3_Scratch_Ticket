@@ -72,7 +72,7 @@
     <div v-if="showLoading" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="flex flex-col items-center">
         <div class="loader mb-4"></div>
-        <div class="text-yellow-100 text-xl font-bold">LOADING...</div>
+        <div class="text-yellow-100 text-xl font-bold">{{ loadingMessage }}</div>
       </div>
     </div>
 
@@ -121,6 +121,12 @@
     <router-link to="/cards" class="mt-8 bg-yellow-500 text-[#7c4585] py-2 px-6 rounded-lg hover:bg-yellow-600">
       我的卡片
     </router-link>
+
+    <!-- VRF loading 動畫 -->
+    <div v-if="showVRFLoading" class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
+      <img src="/images/xxx.gif" alt="Loading..." class="w-32 h-32 mb-6" />
+      <div class="text-yellow-100 text-xl font-bold">正在產生隨機數字，請稍候...</div>
+    </div>
   </div>
 </template>
 
@@ -185,6 +191,11 @@ const prizeMsg = ref({
 const justAddedCardId = ref(null)
 const justAdded = ref(null)
 
+const loadingMessage = ref('')
+const tokenId = ref(null)
+const randomReady = ref(false)
+const showVRFLoading = ref(false)
+
 onMounted(() => {
   if (route.query.justAdded) {
     justAdded.value = Number(route.query.justAdded)
@@ -199,9 +210,7 @@ const selectCard = (card) => {
 }
 
 const pay = () => {
-  // 直接模擬付款成功
-  showPayModal.value = false
-  showAfterPay.value = true
+  buyCard();
 }
 
 const cancelPay = () => {
@@ -368,7 +377,30 @@ function recordCard(card, resultStatus, prizeAmount = '') {
 
 // 合約資訊
 const CONTRACT_ADDRESS = '0xF689Df063700A11b5916309c382Ed5d93401927B'
-const CONTRACT_ABI = [ "function mint() payable returns (uint256)" ]
+const CONTRACT_ABI = [
+    // 讀取函數
+    "function nextTokenId() view returns (uint256)",
+    "function poolBalance() view returns (uint256)",
+    "function platformFee() view returns (uint256)",
+    "function ownerOf(uint256 tokenId) view returns (address)",
+    "function tokenIdToRandomNumber(uint256) view returns (uint256)",
+    "function tokenIdToPrize(uint256) view returns (uint8)",
+    "function isRevealed(uint256) view returns (bool)",
+    "function getTokenInfo(uint256 tokenId) view returns (bool revealed, uint256 randomNumber, uint8 prize, uint256 potentialPrize)",
+    "function getContractStats() view returns (uint256 totalSupply, uint256 currentPoolBalance, uint256 currentPlatformFee)",
+    
+    // 寫入函數
+    "function mint() payable returns (uint256)",
+    "function reveal(uint256 tokenId)",
+    "function addToPool() payable",
+    "function withdrawFee(address payable to, uint256 amount)",
+    "function withdrawNative(uint256 amount)",
+    
+    // 事件
+    "event PrizeClaimed(address user, uint256 tokenId, uint8 prize, uint256 amount)",
+    "event RequestSent(uint256 requestId, uint32 numWords)",
+    "event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment)"
+];
 
 async function buyCard() {
   if (!window.ethereum) {
@@ -376,15 +408,54 @@ async function buyCard() {
     return
   }
   try {
+    console.log('🚀 開始購買流程...')
     const provider = new ethers.BrowserProvider(window.ethereum)
     const signer = await provider.getSigner()
+    const userAddress = await signer.getAddress()
+    const balance = await provider.getBalance(userAddress)
+    console.log('用戶地址:', userAddress)
+    console.log('用戶餘額:', ethers.formatEther(balance), 'ETH')
+    if (balance < ethers.parseEther('0.01')) {
+      alert('餘額不足！需要至少 0.01 ETH')
+      return
+    }
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
-    const tx = await contract.mint({ value: ethers.parseEther('0.01') })
+    console.log('發送 mint 交易...')
+    const tx = await contract.mint({ value: ethers.parseEther('0.01'), gasLimit: 300000 })
+    console.log('交易已發送，hash:', tx.hash)
+    console.log('等待交易確認...')
     await tx.wait()
-    alert('購買成功！')
+    console.log('✅ 交易確認成功！')
     showPayModal.value = false
-  } catch (e) {
-    alert('交易失敗：' + (e?.message || e))
+    // 顯示 VRF loading 動畫
+    showVRFLoading.value = true
+    // 取得 tokenId 並等待隨機數
+    const nextId = await contract.nextTokenId()
+    const tokenId = nextId - 1n
+    console.log('🔍 開始查詢 tokenId:', tokenId.toString())
+    let randomNumber = 0
+    let found = false
+    for (let i = 0; i < 60; i++) {
+      randomNumber = await contract.tokenIdToRandomNumber(tokenId)
+      console.log(`[查詢第${i+1}次] tokenId: ${tokenId.toString()} randomNumber: ${randomNumber}`)
+      if (randomNumber > 0) {
+        found = true
+        break
+      }
+      await new Promise(r => setTimeout(r, 2000))
+    }
+    showVRFLoading.value = false
+    if (found) {
+      console.log('✅ VRF 隨機數已生成:', { tokenId: tokenId.toString(), randomNumber: randomNumber.toString() })
+      showAfterPay.value = true
+    } else {
+      console.log('⏰ 等待隨機數超時')
+    }
+  } catch (error) {
+    let errorMessage = error?.message || '交易失敗'
+    alert('交易失敗：' + errorMessage)
+    console.error('錯誤詳情:', error)
+    showVRFLoading.value = false
   }
 }
 </script>
