@@ -140,23 +140,8 @@ const { isConnected, error, isConnecting, canRetry } = storeToRefs(walletStore)
 const walletConnected = ref(false)
 const errorMsg = ref('')
 
-onMounted(async () => {
-  if (window.ethereum) {
-    try {
-      // 檢查是否已授權
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' })
-      walletConnected.value = accounts.length > 0
-      // 若未連接可自動提示用戶連接
-      if (!walletConnected.value) {
-        // 可選：自動彈窗要求連接
-        // await window.ethereum.request({ method: 'eth_requestAccounts' })
-      }
-    } catch (e) {
-      walletConnected.value = false
-    }
-  } else {
-    walletConnected.value = false
-  }
+onMounted(() => {
+  walletConnected.value = false; // 每次進來都強制為未連接
 })
 
 async function connectWallet() {
