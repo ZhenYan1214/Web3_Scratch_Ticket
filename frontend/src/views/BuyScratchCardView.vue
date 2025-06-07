@@ -110,6 +110,33 @@
           <div class="text-4xl mb-4" v-if="prizeMsg.emoji">{{ prizeMsg.emoji }}</div>
           <div class="text-2xl font-bold mb-2 text-[#7c4585]">{{ prizeMsg.title }}</div>
           <div class="text-lg text-gray-700 mb-4">{{ prizeMsg.text }}</div>
+          <div v-if="revealLoading" class="flex flex-col items-center justify-center py-8">
+            <div class="w-20 h-20 mb-4 flex items-center justify-center rounded-full bg-gradient-to-tr from-yellow-300 to-yellow-500 animate-pulse shadow-lg">
+              <svg class="animate-spin w-12 h-12 text-yellow-700" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </div>
+            <div class="text-2xl font-bold text-yellow-600 mb-2">獎項揭曉中...</div>
+            <div class="text-lg text-gray-500">揭曉需要一點時間，請耐心等待❤️</div>
+          </div>
+          <div v-else-if="revealResult" class="flex flex-col items-center justify-center py-8">
+            <div class="w-20 h-20 mb-4 flex items-center justify-center rounded-full bg-gradient-to-tr from-yellow-400 to-yellow-600 shadow-xl">
+              <svg v-if="revealResult.amount !== '0.0'" class="w-12 h-12 text-green-600" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <svg v-else class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path stroke="currentColor" stroke-width="2" d="M8 12h8" />
+              </svg>
+            </div>
+            <div class="text-2xl font-bold mb-2" :class="revealResult.amount !== '0.0' ? 'text-green-700' : 'text-gray-500'">              {{ revealResult.amount !== '0.0' ? '恭喜中獎！' : '未中獎' }}
+            </div>
+            <div class="text-xl mb-1 text-[#7c4585]">恭喜你中了：<span class="font-bold">{{ prizeNameMap[revealResult.prize] }}！！！</span></div>
+            <div class="text-xl mb-4 text-yellow-700">你獲得了：<span class="font-bold">{{ revealResult.amount }} ETH！！！</span></div>
+            <div v-if="revealResult.amount !== '0.0'" class="text-lg text-green-600 font-semibold mb-2">獎金已自動發送到你的錢包❤️</div>
+          </div>
+          <div v-else-if="revealError" class="text-red-500 font-bold">{{ revealError }}</div>
           <button
             class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition"
             @click="closePrizeModal"
@@ -124,8 +151,8 @@
 
     <!-- VRF loading 動畫 -->
     <div v-if="showVRFLoading" class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
-      <img src="/images/xxx.gif" alt="Loading..." class="w-32 h-32 mb-6" />
-      <div class="text-yellow-100 text-xl font-bold">正在產生隨機數字，請稍候...</div>
+      <img src="/images/正式loading.gif" alt="Loading..." class="w-72 h-72 mb-6" />
+      <div class="text-yellow-100 text-xl font-bold">財神爺正在搖金元寶，專屬幸運號碼即將降臨</div>
     </div>
   </div>
 </template>
@@ -156,26 +183,11 @@ const prizeImage = ref('/images/prize.png')
 let isScratching = false
 
 const prizeOptions = [
-  {
-    img: '/images/prizes/thanks.png',
-    probability: 65
-  },
-  {
-    img: '/images/prizes/feedback.png',
-    probability: 15
-  },
-  {
-    img: '/images/prizes/lucky.png',
-    probability: 10
-  },
-  {
-    img: '/images/prizes/goodluck.png',
-    probability: 5
-  },
-  {
-    img: '/images/prizes/money.png',
-    probability: 0.5
-  }
+  { img: '/images/prizes/thanks.png' },      // 0: None
+  { img: '/images/prizes/feedback.png' },   // 1: Consolation
+  { img: '/images/prizes/lucky.png' },      // 2: Second
+  { img: '/images/prizes/goodluck.png' },   // 3: First
+  { img: '/images/prizes/money.png' }       // 4: Grand
 ]
 
 const prizeResult = ref(null)
@@ -196,10 +208,45 @@ const tokenId = ref(null)
 const randomReady = ref(false)
 const showVRFLoading = ref(false)
 
-onMounted(() => {
+// reveal 相關狀態
+const revealResult = ref(null)
+const revealLoading = ref(false)
+const revealError = ref('')
+
+// 新增獎項名稱對應
+const prizeNameMap = {
+  0: '祝君發財獎',
+  1: '小福星獎',
+  2: '發財進寶三獎',
+  3: '金銀滿屋二獎',
+  4: '財神親臨一獎',
+  5: '財源滾滾超級大獎'
+}
+
+// 取得錢包地址
+const userAddress = ref('')
+
+// 在 onMounted 時取得錢包地址
+onMounted(async () => {
+  console.log('🔍 BuyScratchCardView mounted')
+  if (window.ethereum) {
+    try {
+      console.log('🦊 MetaMask detected')
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      console.log('👛 Connected accounts:', accounts)
+      if (accounts && accounts.length > 0) {
+        userAddress.value = accounts[0]
+        console.log('✅ User address set:', userAddress.value)
+      }
+    } catch (e) {
+      console.error('❌ 連接錢包失敗:', e)
+    }
+  } else {
+    console.log('⚠️ MetaMask not detected')
+  }
+
   if (route.query.justAdded) {
     justAdded.value = Number(route.query.justAdded)
-    // 清除 query 參數，避免重複動畫
     history.replaceState(null, '', location.pathname)
   }
 })
@@ -222,26 +269,34 @@ const showScratch = () => {
   showAfterPay.value = false
   showLoading.value = true
   setTimeout(() => {
-    prizeResult.value = getRandomPrize()
+    // prizeResult.value 已經在 mint 隨機數產生後設好
     showScratchModal.value = true
     prizeGiven.value = false
     scratchedPercent.value = 0
     showLoading.value = false
     nextTick(drawMask)
-  }, 60000) // 1分鐘loading動畫
+  }, 1000)
 }
 
 function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
-  const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
+  console.log('📝 Adding card to storage:', { card, resultStatus, prizeAmount })
+  if (!userAddress.value) {
+    console.error('❌ 未連接錢包')
+    return
+  }
+  const myCards = JSON.parse(localStorage.getItem(`myCards_${userAddress.value}`) || '[]')
+  console.log('📦 Current cards in storage:', myCards)
   const newCard = {
     id: Date.now(),
     img: card.image,
     name: card.name,
-    status: resultStatus, // '已中獎'、'未中獎'、'待刮開'
+    status: resultStatus,
     amount: resultStatus === '已中獎' ? prizeAmount : ''
   }
+  console.log('🆕 New card to add:', newCard)
   myCards.push(newCard)
-  localStorage.setItem('myCards', JSON.stringify(myCards))
+  localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(myCards))
+  console.log('💾 Saved cards to storage:', myCards)
   justAddedCardId.value = newCard.id
 }
 
@@ -289,33 +344,61 @@ const stopScratching = () => {
   isScratching = false
 }
 
+async function revealCard(tokenId) {
+  try {
+    console.log('🔔 開始觸發 reveal，tokenId:', tokenId)
+    revealLoading.value = true
+    revealError.value = ''
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+    // 呼叫 reveal
+    const tx = await contract.reveal(tokenId)
+    console.log('⏳ 等待 reveal 交易確認...')
+    await tx.wait()
+    console.log('✅ reveal 交易完成！')
+    // 查詢獎項資訊
+    const info = await contract.getTokenInfo(tokenId)
+    // info: [revealed, randomNumber, prize, potentialPrize]
+    revealResult.value = {
+      prize: info[2],
+      amount: ethers.formatEther(info[3])
+    }
+    console.log('🎉 reveal 結果:', revealResult.value)
+    // === 新增：同步 localStorage ===
+    if (userAddress.value) {
+      const myCards = JSON.parse(localStorage.getItem(`myCards_${userAddress.value}`) || '[]')
+      // 找到最後一張 status 為 '待刮開' 的卡片（剛剛 mint 的）
+      for (let i = myCards.length - 1; i >= 0; i--) {
+        if (myCards[i].status === '待刮開') {
+          myCards[i].status = Number(info[2]) === 0 ? '未中獎' : '已中獎'
+          myCards[i].prize = Number(info[2])
+          myCards[i].amount = ethers.formatEther(info[3])
+          break
+        }
+      }
+      localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(myCards))
+      console.log('📝 已同步 reveal 結果到 localStorage', myCards)
+    }
+    // === END ===
+  } catch (e) {
+    revealError.value = e?.message || '揭曉失敗'
+    console.error('❌ reveal 發生錯誤:', e)
+  } finally {
+    revealLoading.value = false
+  }
+}
+
 function givePrizeByImage() {
   if (!prizeResult.value) return
-  let status = '未中獎'
-  let amount = ''
-  if (prizeResult.value.img.includes('money')) {
-    prizeMsg.value = { title: '恭喜獲得 1 ETH！', text: '你中了最大獎！', emoji: '🎉' }
-    status = '已中獎'
-    amount = '1'
-  } else if (prizeResult.value.img.includes('goodluck')) {
-    prizeMsg.value = { title: '恭喜獲得 0.1 ETH！', text: '好運降臨！', emoji: '🍀' }
-    status = '已中獎'
-    amount = '0.1'
-  } else if (prizeResult.value.img.includes('lucky')) {
-    prizeMsg.value = { title: '恭喜獲得 0.05 ETH！', text: '幸運之神眷顧你！', emoji: '✨' }
-    status = '已中獎'
-    amount = '0.05'
-  } else if (prizeResult.value.img.includes('feedback')) {
-    prizeMsg.value = { title: '恭喜獲得 0.01 ETH！', text: '祝你下次中大獎！', emoji: '💌' }
-    status = '已中獎'
-    amount = '0.01'
+  // 自動觸發 reveal
+  if (tokenId.value) {
+    console.log('🟡 準備自動觸發 reveal，tokenId:', tokenId.value)
+    revealCard(tokenId.value)
   } else {
-    prizeMsg.value = { title: '謝謝參與！', text: '再接再厲，下次會更好！', emoji: '🙏' }
-    status = '未中獎'
-    amount = ''
+    console.warn('⚠️ tokenId 不存在，無法觸發 reveal')
   }
-  // 新增：記錄卡片到 myCards
-  addCardToMyCards(selectedCard.value, status, amount)
+  // reveal 結果顯示由 revealCard 取得
   showPrizeModal.value = true
 }
 
@@ -431,13 +514,13 @@ async function buyCard() {
     showVRFLoading.value = true
     // 取得 tokenId 並等待隨機數
     const nextId = await contract.nextTokenId()
-    const tokenId = nextId - 1n
-    console.log('🔍 開始查詢 tokenId:', tokenId.toString())
+    tokenId.value = nextId - 1n
+    console.log('🔍 開始查詢 tokenId:', tokenId.value.toString())
     let randomNumber = 0
     let found = false
     for (let i = 0; i < 60; i++) {
-      randomNumber = await contract.tokenIdToRandomNumber(tokenId)
-      console.log(`[查詢第${i+1}次] tokenId: ${tokenId.toString()} randomNumber: ${randomNumber}`)
+      randomNumber = await contract.tokenIdToRandomNumber(tokenId.value)
+      console.log(`[查詢第${i+1}次] tokenId: ${tokenId.value.toString()} randomNumber: ${randomNumber}`)
       if (randomNumber > 0) {
         found = true
         break
@@ -446,7 +529,16 @@ async function buyCard() {
     }
     showVRFLoading.value = false
     if (found) {
-      console.log('✅ VRF 隨機數已生成:', { tokenId: tokenId.toString(), randomNumber: randomNumber.toString() })
+      // 查詢合約獎項
+      const info = await contract.getTokenInfo(tokenId.value)
+      const prizeIndex = Number(info[2])
+      prizeResult.value = { img: prizeOptions[prizeIndex]?.img || '/images/prizes/thanks.png' }
+      console.log('✅ VRF 隨機數已生成:', { tokenId: tokenId.value.toString(), randomNumber: randomNumber.toString(), prizeIndex, prizeImg: prizeResult.value.img })
+      // 將卡片加入到 localStorage
+      if (selectedCard.value) {
+        console.log('📝 準備將卡片加入到 localStorage:', selectedCard.value)
+        addCardToMyCards(selectedCard.value)
+      }
       showAfterPay.value = true
     } else {
       console.log('⏰ 等待隨機數超時')

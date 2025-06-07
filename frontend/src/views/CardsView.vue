@@ -130,49 +130,87 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const justAdded = ref(null)
 
-// 讀取 localStorage 中的卡片資料
+// 取得錢包地址，例如 userAddress = '0x123...'
+const userAddress = ref('')
+// 讀取當前 userAddress 下的卡片
 const cardRecord = ref([])
 
-function loadCardsFromStorage() {
-  const stored = localStorage.getItem('myCards')
+function loadCards() {
+  console.log('📥 Loading cards for address:', userAddress.value)
+  if (!userAddress.value) {
+    console.log('⚠️ No user address, clearing cards')
+    cardRecord.value = []
+    return
+  }
+  const stored = localStorage.getItem(`myCards_${userAddress.value}`)
+  console.log('📦 Stored cards data:', stored)
   cardRecord.value = stored ? JSON.parse(stored) : []
+  console.log('🎴 Loaded cards:', cardRecord.value)
 }
 
-onMounted(() => {
-  loadCardsFromStorage()
+function saveCards(cards) {
+  if (!userAddress.value) return
+  localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(cards))
+}
+
+// 在 onMounted 時取得錢包地址
+onMounted(async () => {
+  console.log('🔍 CardsView mounted')
+  if (window.ethereum) {
+    try {
+      console.log('🦊 MetaMask detected')
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      console.log('👛 Connected accounts:', accounts)
+      if (accounts && accounts.length > 0) {
+        userAddress.value = accounts[0]
+        console.log('✅ User address set:', userAddress.value)
+        loadCards() // 載入該地址的卡片
+      }
+    } catch (e) {
+      console.error('❌ 連接錢包失敗:', e)
+    }
+  } else {
+    console.log('⚠️ MetaMask not detected')
+  }
 })
 
-
-
+// 監聽錢包地址變動
+window.ethereum?.on('accountsChanged', (accounts) => {
+  if (accounts.length > 0) {
+    userAddress.value = accounts[0]
+    loadCards() // 重新載入新地址的卡片
+  } else {
+    userAddress.value = ''
+    cardRecord.value = []
+  }
+})
 
 const statusTypes = ['全部', '已中獎', '未中獎', '待刮開']
 const selectedStatus = ref('全部')
 const filteredCards = computed(() => {
   if (selectedStatus.value === '全部') return cardRecord.value
-  return cardRecord.value.filter(card => card.status === selectedStatus.value)
+  if (selectedStatus.value === '待刮開') {
+    return cardRecord.value.filter(card => card.status === '待刮開')
+  }
+  if (selectedStatus.value === '未中獎') {
+    return cardRecord.value.filter(card => card.status !== '待刮開' && Number(card.prize) === 0)
+  }
+  if (selectedStatus.value === '已中獎') {
+    return cardRecord.value.filter(card => card.status !== '待刮開' && Number(card.prize) > 0)
+  }
+  return cardRecord.value
 })
 
-// 新增卡片時，已中獎或未中獎都會存進 localStorage
-function addCard(resultStatus, prizeAmount, selectedCard) {
-  const newCard = {
-    id: Date.now(),
-    img: selectedCard.value.image,
-    name: selectedCard.value.name,
-    status: resultStatus,
-    amount: resultStatus === '已中獎' ? prizeAmount : ''
-  }
-  cardRecord.value.push(newCard)
-  localStorage.setItem('myCards', JSON.stringify(cardRecord.value))
-}
-
+// 新增卡片時，已中獎或未中獎都會存進 userAddress 專屬 localStorage
 function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
-  const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
+  if (!userAddress.value) return
+  const myCards = JSON.parse(localStorage.getItem(`myCards_${userAddress.value}`) || '[]')
   const newCard = {
     id: Date.now(),
     img: card.image,
@@ -181,189 +219,23 @@ function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
     amount: resultStatus === '已中獎' ? prizeAmount : ''
   }
   myCards.push(newCard)
-  localStorage.setItem('myCards', JSON.stringify(myCards))
-}
-
-function ensureDefaultCards() {
-  if (!cardRecord.value.length) {
-    cardRecord.value = [
-      {
-        id: 1,
-        img: '/images/card/3.png',
-        name: '金幣卡',
-        status: '已中獎',
-        amount: '0.5'
-      },
-      {
-        id: 2,
-        img: '/images/card/2.png',
-        name: '幸運卡',
-        status: '未中獎',
-        amount: ''
-      },
-      {
-        id: 3,
-        img: '/images/card/5.png',
-        name: '福氣卡',
-        status: '待刮開',
-        amount: ''
-      }
-    ]
-    localStorage.setItem('myCards', JSON.stringify(cardRecord.value))
-  }
+  localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(myCards))
+  cardRecord.value = myCards
 }
 
 const scratchModalCard = ref(null)
-const scratchCanvas = ref(null)
-const prizeGiven = ref(false)
-const scratchedPercent = ref(0)
 const showScratchModal = ref(false)
-const prizeMsg = ref({ title: '', text: '', emoji: '' })
-const prizeImg = ref('')
 
 function openScratchModal(card) {
+  if (card.status !== '待刮開') return // 只允許待刮開
   scratchModalCard.value = card
   showScratchModal.value = true
-  prizeGiven.value = false
-  scratchedPercent.value = 0
-  // 一進入動畫就抽獎並顯示prizes圖
-  const prize = getRandomPrize()
-  prizeImg.value = prize.img
-  // 把抽獎結果暫存到modal card，不要直接改卡片本身
-  scratchModalCard.value._prize = prize
-  nextTick(drawMask)
-}
-
-let isScratching = false
-function startScratching() {
-  isScratching = true
-}
-
-function scratch(event) {
-  if (!isScratching || !scratchCanvas.value) return
-  const ctx = scratchCanvas.value.getContext('2d')
-  const rect = scratchCanvas.value.getBoundingClientRect()
-  const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-  ctx.globalCompositeOperation = 'destination-out'
-  ctx.beginPath()
-  ctx.arc(x, y, 20, 0, Math.PI * 2)
-  ctx.fill()
-
-  // 計算已刮面積百分比
-  const imageData = ctx.getImageData(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
-  let transparent = 0
-  for (let i = 3; i < imageData.data.length; i += 4) {
-    if (imageData.data[i] === 0) transparent++
-  }
-  scratchedPercent.value = transparent / (scratchCanvas.value.width * scratchCanvas.value.height) * 100
-
-  // 若已刮超過40%，自動顯示獎金
-  if (scratchedPercent.value > 50 && !prizeGiven.value) {
-    revealPrize()
-    prizeGiven.value = true
-  }
-}
-
-function stopScratching() {
-  isScratching = false
-}
-
-function drawMask() {
-  if (scratchCanvas.value) {
-    const ctx = scratchCanvas.value.getContext('2d')
-    const maskImg = new window.Image()
-    maskImg.src = '/images/unscratch.png'
-    maskImg.onload = () => {
-      ctx.globalCompositeOperation = 'source-over'
-      ctx.clearRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
-      ctx.drawImage(maskImg, 0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
-    }
-  }
-}
-
-// 與購買頁一致的獎項設定
-const prizeOptions = [
-  { img: '/images/prizes/thanks.png', probability: 65 },
-  { img: '/images/prizes/feedback.png', probability: 15 },
-  { img: '/images/prizes/lucky.png', probability: 10 },
-  { img: '/images/prizes/goodluck.png', probability: 5 },
-  { img: '/images/prizes/money.png', probability: 0.5 }
-]
-
-// 機率抽獎
-function getRandomPrize() {
-  const rand = Math.random() * 100
-  let sum = 0
-  for (const prize of prizeOptions) {
-    sum += prize.probability
-    if (rand < sum) return prize
-  }
-  return prizeOptions[prizeOptions.length - 1]
-}
-
-function revealPrize() {
-  // 直接用openScratchModal時抽到的prize
-  const prize = scratchModalCard.value._prize
-  let status = '未中獎'
-  let amount = ''
-  if (prize.img.includes('money')) {
-    prizeMsg.value = { title: '恭喜獲得 1 ETH！', text: '你中了最大獎！', emoji: '🎉' }
-    status = '已中獎'
-    amount = '1'
-  } else if (prize.img.includes('goodluck')) {
-    prizeMsg.value = { title: '恭喜獲得 0.1 ETH！', text: '好運降臨！', emoji: '🍀' }
-    status = '已中獎'
-    amount = '0.1'
-  } else if (prize.img.includes('lucky')) {
-    prizeMsg.value = { title: '恭喜獲得 0.05 ETH！', text: '幸運之神眷顧你！', emoji: '✨' }
-    status = '已中獎'
-    amount = '0.05'
-  } else if (prize.img.includes('feedback')) {
-    prizeMsg.value = { title: '恭喜獲得 0.01 ETH！', text: '祝你下次中大獎！', emoji: '💌' }
-    status = '已中獎'
-    amount = '0.01'
-  } else {
-    // 無論有沒有中獎都會顯示彈窗
-    prizeMsg.value = { title: '謝謝參與！', text: '再接再厲，下次會更好！', emoji: '🙏' }
-    status = '未中獎'
-    amount = ''
-  }
-
-  // 更新 localStorage
-  const myCards = JSON.parse(localStorage.getItem('myCards') || '[]')
-  const idx = myCards.findIndex(c => c.id === scratchModalCard.value.id)
-  if (idx !== -1) {
-    myCards[idx].status = status
-    myCards[idx].amount = amount
-    myCards[idx].img = scratchModalCard.value.img // 保持卡片圖不變
-    localStorage.setItem('myCards', JSON.stringify(myCards))
-    cardRecord.value = myCards
-  }
 }
 
 function closeScratchModal() {
   showScratchModal.value = false
   scratchModalCard.value = null
 }
-
-// 取得錢包地址，例如 userAddress = '0x123...'
-const userAddress = ref('')
-
-// 儲存卡片
-function saveCards(cards) {
-  if (!userAddress.value) return
-  localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(cards))
-}
-
-// 讀取卡片
-function loadCards() {
-  if (!userAddress.value) return []
-  const stored = localStorage.getItem(`myCards_${userAddress.value}`)
-  return stored ? JSON.parse(stored) : []
-}
-
-
 </script>
 
 <style scoped>
