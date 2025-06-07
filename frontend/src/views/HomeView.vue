@@ -66,8 +66,10 @@
       <div class="flex flex-col items-center justify-center w-full">
         <!-- 獎池金額區塊（在圖片上方，置中） -->
         <div>
-          <span class="text-2xl font-bold text-yellow-100 mb-2">目前獎池金額：</span>
-          <span class="text-4xl font-extrabold text-yellow-500 mb-1">10.00 ETH</span>
+          <span class="text-2xl font-bold text-yellow-100 mb-2">財神獎池累積金額：</span>
+          <span class="text-4xl md:text-6xl font-extrabold text-yellow-500 mb-1">
+            {{ isNaN(Number(poolBalance)) ? poolBalance : Number(poolBalance).toFixed(4) }} ETH
+          </span>
         </div>
         <!-- 跳動的土豆流氓圖片（置中） -->
         <div class="relative mx-auto mb-8 w-[500px] h-[500px] max-w-[90vw] max-h-[90vw]">
@@ -129,6 +131,7 @@
   import { useRouter } from 'vue-router'
   import '@/assets/styles/buy.css'  
   import ScratchCardModal from '@/components/ScratchCardModal.vue'
+  import { ethers } from 'ethers'
 
   const coinsLarge = Array.from({ length: 20 }, () => ({
     left: Math.random() * 100,
@@ -145,6 +148,12 @@
   const router = useRouter()
   const isConnecting = ref(false)
 
+  const poolBalance = ref('0.00')
+  const CONTRACT_ADDRESS = '0xF689Df063700A11b5916309c382Ed5d93401927B'
+  const CONTRACT_ABI = [
+    'function poolBalance() view returns (uint256)'
+  ]
+
   async function connectWalletAndGoBuy() {
     if (!window.ethereum) {
       alert('請先安裝 MetaMask 錢包！')
@@ -160,6 +169,7 @@
         alert('未取得錢包地址')
       }
     } catch (e) {
+      console.error('連接錢包失敗:', e)
       alert('連接錢包失敗')
     } finally {
       isConnecting.value = false
@@ -219,11 +229,23 @@ const stopScratching = () => {
   isScratching = false
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (scratchCanvas.value) {
     const ctx = scratchCanvas.value.getContext('2d')
     ctx.fillStyle = '#ccc'
     ctx.fillRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+  }
+
+  if (window.ethereum) {
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    try {
+      const balance = await contract.poolBalance()
+      poolBalance.value = ethers.formatEther(balance)
+    } catch (e) {
+      console.error('讀取 poolBalance 失敗:', e)
+      poolBalance.value = '讀取失敗'
+    }
   }
 })
 </script>
