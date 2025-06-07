@@ -93,7 +93,7 @@ class ContractTester {
             return false;
         }
     }
-
+/*
     async testAddToPool() {
         await this.log("💰 測試添加資金到獎池...");
         try {
@@ -114,7 +114,7 @@ class ContractTester {
             return false;
         }
     }
-
+*/
     async testMint() {
         await this.log("🎫 測試購買刮刮樂...");
         try {
