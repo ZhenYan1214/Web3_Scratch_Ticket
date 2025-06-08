@@ -33,43 +33,41 @@
         <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
           Web3 時代的智能理財新選擇
         </p>
-      </div>
 
-      <!-- 特色卡片 -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 w-full max-w-6xl">
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🔒</span>
-            </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">安全可靠</h3>
-            <p class="text-red-100">智能合約審計，資產安全無憂</p>
+        <div class="my-5"></div>
+      
+      <!-- 連接錢包按鈕（不再fixed，直接放在內容下方） -->
+      <div v-if="!walletConnected" class="mt-8 flex flex-col items-center">
+        <button
+          @click="connectWallet"
+          class="wallet-btn bg-yellow-400 text-[#7c4585] px-24 py24 rounded-xl font-bold text-4xl shadow-lg hover:bg-yellow-300 transition"
+          :disabled="isConnecting"
+        >
+          {{ isConnecting ? '連接中...' : '連接錢包' }}
+        </button>
+        <!-- 錯誤提示 -->
+        <div v-if="errorMsg" class="error-message mt-4">
+          <div class="flex items-center justify-between">
+            <span>{{ errorMsg }}</span>
+            <button 
+              v-if="canRetry"
+              @click="retryConnection" 
+              class="ml-4 px-4 py-2 bg-yellow-400 text-[#7c4585] rounded-lg hover:bg-yellow-300 transition"
+            >
+              重試
+            </button>
           </div>
-          <div class="card-glow"></div>
-        </div>
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">💰</span>
-            </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">收益豐厚</h3>
-            <p class="text-red-100">DeFi 收益優化，財運滾滾來</p>
-          </div>
-          <div class="card-glow"></div>
-        </div>
-        <div class="feature-card group">
-          <div class="card-content">
-            <div class="icon-wrapper">
-              <span class="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🚀</span>
-            </div>
-            <h3 class="text-xl font-bold mb-3 text-yellow-300">創新科技</h3>
-            <p class="text-red-100">區塊鏈技術，引領未來理財</p>
-          </div>
-          <div class="card-glow"></div>
         </div>
       </div>
+      <div
+        v-else
+        class="mt-8 text-yellow-200 text-xl text-center"
+      >
+        錢包已連接，正在跳轉...
+      </div>
 
-      <!-- 規則說明 -->
+      <div class="my-5"></div>
+    <!-- 規則說明 -->
       <div class="text-center space-y-6">
         <h2 class="text-3xl font-bold text-yellow-300 mb-4">規則說明</h2>
         <ul class="text-xl text-yellow-100 space-y-2">
@@ -79,49 +77,7 @@
           <li>4. 所有過程皆由智能合約自動執行，公平公正。</li>
         </ul>
       </div>
-
-      <!-- 底部資訊 -->
-      <div class="absolute bottom-8 left-0 right-0 text-center">
-        <div class="special-offer">
-          <span class="icon">🎁</span>
-          <span class="text">新年限定：連接錢包即可參與 888 ETH 限時空投</span>
-          <span class="icon">🎁</span>
-        </div>
-      </div>
     </div>
-
-    <!-- 固定在畫面下方的連接錢包按鈕 -->
-    <div
-      v-if="!walletConnected"
-      class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50"
-    >
-      <button
-        @click="connectWallet"
-        class="wallet-btn bg-yellow-400 text-[#7c4585] px-8 py-4 rounded-xl font-bold text-2xl shadow-lg hover:bg-yellow-300 transition"
-        :disabled="isConnecting"
-      >
-        {{ isConnecting ? '連接中...' : '連接錢包' }}
-      </button>
-      
-      <!-- 錯誤提示 -->
-      <div v-if="errorMsg" class="error-message mt-4">
-        <div class="flex items-center justify-between">
-          <span>{{ errorMsg }}</span>
-          <button 
-            v-if="canRetry"
-            @click="retryConnection" 
-            class="ml-4 px-4 py-2 bg-yellow-400 text-[#7c4585] rounded-lg hover:bg-yellow-300 transition"
-          >
-            重試
-          </button>
-        </div>
-      </div>
-    </div>
-    <div
-      v-else
-      class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 text-yellow-200 text-xl"
-    >
-      錢包已連接，正在跳轉...
     </div>
   </div>
 </template>
