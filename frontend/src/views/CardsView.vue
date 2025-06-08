@@ -64,10 +64,6 @@
                 <img :src="card.img" :alt="card.name" class="w-full h-full object-contain" />
               </div>
               <div class="text-2xl font-extrabold mb-1 leading-tight">{{ card.name }}</div>
-              <div v-if="card.status === '已中獎'" class="text-yellow-500 text-xl font-bold mb-1 leading-tight">獎金金額</div>
-              <div v-if="card.status === '已中獎'" class="text-3xl font-bold text-yellow-400 mb-1 leading-tight">
-                {{ card.amount }} ETH
-              </div>
               <div
                 :class="[
                   'mt-1 text-lg font-bold leading-tight',
@@ -79,6 +75,12 @@
                 ]"
               >
                 {{ card.status }}
+              </div>
+              <div v-if="card.status === '已中獎'" class="text-yellow-500 text-xl font-bold mb-1 leading-tight">
+                獎金金額
+              </div>
+              <div v-if="card.status === '已中獎'" class="text-3xl font-bold text-yellow-400 mb-1 leading-tight">
+                {{ Number(card.amount).toFixed(4) }} ETH
               </div>
             </div>
           </div>
@@ -92,8 +94,7 @@
         <h2 class="text-2xl font-bold text-center mb-4" style="color: #7c4585">刮開你的刮刮樂！</h2>
         <div class="relative w-64 h-96 mx-auto scratch-cursor">
           <img
-            v-if="prizeImg"
-            :src="prizeImg"
+            :src="revealedImg"
             alt="prize"
             class="w-full h-full object-cover rounded absolute inset-0 z-0"
           />
@@ -107,23 +108,36 @@
             @mouseup="stopScratching"
             @mouseleave="stopScratching"
           ></canvas>
-          <!-- 彈出獎勵框，z-50確保在最上層 -->
-          <div
-            v-if="prizeGiven"
-            class="fixed inset-0 flex items-center justify-center z-[9999]"
-            style="background: rgba(0,0,0,0.3);"
-          >
+          <!-- loading 動畫 -->
+          <div v-if="revealLoading" class="absolute inset-0 flex items-center justify-center z-20 bg-white/80">
+            <div class="flex flex-col items-center justify-center py-8">
+              <div class="w-20 h-20 mb-4 flex items-center justify-center rounded-full bg-gradient-to-tr from-yellow-300 to-yellow-500 animate-pulse shadow-lg">
+                <svg class="animate-spin w-12 h-12 text-yellow-700" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+              </div>
+              <div class="text-2xl font-bold text-yellow-600 mb-2">獎項揭曉中...</div>
+              <div class="text-lg text-gray-500">揭曉需要一點時間，請耐心等待</div>
+            </div>
+          </div>
+          <!-- 結果彈窗 -->
+          <div v-if="revealResult && !revealLoading" class="fixed inset-0 flex items-center justify-center z-[9999]" style="background: rgba(0,0,0,0.3);">
             <div class="bg-white rounded-2xl shadow-2xl px-8 py-8 flex flex-col items-center border-4 border-yellow-400">
-              <div class="text-4xl mb-4" v-if="prizeMsg.emoji">{{ prizeMsg.emoji }}</div>
-              <div class="text-2xl font-bold mb-2 text-[#7c4585]">{{ prizeMsg.title }}</div>
-              <div class="text-lg text-gray-700 mb-4">{{ prizeMsg.text }}</div>
-              <button
-                class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition"
-                @click="closeScratchModal"
-              >關閉</button>
+              <div class="text-4xl mb-4" v-if="revealResult.amount !== '0.0'">🎉</div>
+              <div class="text-2xl font-bold mb-2 text-[#7c4585]">{{ revealResult.amount !== '0.0' ? '恭喜中獎！' : '未中獎' }}</div>
+              <div class="text-xl mb-1 text-[#7c4585]">恭喜你中了：<span class="font-bold">{{ prizeNameMap[revealResult.prize] }}！！！</span></div>
+              <div class="text-xl mb-4 text-yellow-700">你獲得了：<span class="font-bold">{{ revealResult.amount }} ETH！！！</span></div>
+              <div v-if="revealResult.amount !== '0.0'" class="text-lg text-green-600 font-semibold mb-2">獎金已自動發送到你的錢包❤️</div>
+              <button class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition" @click="closeScratchModal">關閉</button>
             </div>
           </div>
         </div>
+        <button
+          v-if="!revealResult || revealLoading"
+          class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition mt-4 w-full"
+          @click="closeScratchModal"
+        >關閉</button>
       </div>
     </div>
   </div>
@@ -132,6 +146,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { ethers } from 'ethers'
 
 const route = useRoute()
 const justAdded = ref(null)
@@ -141,16 +156,94 @@ const userAddress = ref('')
 // 讀取當前 userAddress 下的卡片
 const cardRecord = ref([])
 
-function loadCards() {
+const CONTRACT_ADDRESS = '0xF689Df063700A11b5916309c382Ed5d93401927B'
+const CONTRACT_ABI = [
+    // 讀取函數
+    "function nextTokenId() view returns (uint256)",
+    "function poolBalance() view returns (uint256)",
+    "function platformFee() view returns (uint256)",
+    "function ownerOf(uint256 tokenId) view returns (address)",
+    "function tokenIdToRandomNumber(uint256) view returns (uint256)",
+    "function tokenIdToPrize(uint256) view returns (uint8)",
+    "function isRevealed(uint256) view returns (bool)",
+    "function getTokenInfo(uint256 tokenId) view returns (bool revealed, uint256 randomNumber, uint8 prize, uint256 potentialPrize)",
+    "function getContractStats() view returns (uint256 totalSupply, uint256 currentPoolBalance, uint256 currentPlatformFee)",
+    // 寫入函數
+    "function mint() payable returns (uint256)",
+    "function reveal(uint256 tokenId)",
+    "function addToPool() payable",
+    "function withdrawFee(address payable to, uint256 amount)",
+    "function withdrawNative(uint256 amount)",
+    // 事件
+    "event PrizeClaimed(address user, uint256 tokenId, uint8 prize, uint256 amount)",
+    "event RequestSent(uint256 requestId, uint32 numWords)",
+    "event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment)"
+]
+
+const prizeImg = ref('')
+const scratchCanvas = ref(null)
+let isScratching = false
+const scratchedPercent = ref(0)
+const prizeGiven = ref(false)
+const prizeMsg = ref({
+  title: '',
+  text: '',
+  emoji: ''
+})
+
+const revealResult = ref(null)
+const revealLoading = ref(false)
+const prizeOptions = [
+  { img: '/images/prizes/thanks.png' },      // 0: None
+  { img: '/images/prizes/feedback.png' },   // 1: Consolation
+  { img: '/images/prizes/lucky.png' },      // 2: Second
+  { img: '/images/prizes/goodluck.png' },   // 3: First
+  { img: '/images/prizes/money.png' }       // 4: Grand
+]
+const prizeNameMap = {
+  0: '祝君發財獎',
+  1: '小福星獎',
+  2: '發財進寶三獎',
+  3: '金銀滿屋二獎',
+  4: '財神親臨一獎',
+  5: '財源滾滾超級大獎'
+}
+
+const revealedImg = ref('') // canvas 下層圖片
+
+async function loadCards() {
   console.log('📥 Loading cards for address:', userAddress.value)
   if (!userAddress.value) {
     console.log('⚠️ No user address, clearing cards')
     cardRecord.value = []
     return
   }
-  const stored = localStorage.getItem(`myCards_${userAddress.value}`)
-  console.log('📦 Stored cards data:', stored)
-  cardRecord.value = stored ? JSON.parse(stored) : []
+  let stored = localStorage.getItem(`myCards_${userAddress.value}`)
+  let cards = stored ? JSON.parse(stored) : []
+
+  // 與鏈上同步 revealed 狀態
+  if (window.ethereum && cards.length > 0) {
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i]
+      if (card.tokenId !== undefined) {
+        try {
+          const info = await contract.getTokenInfo(card.tokenId)
+          cards[i].revealed = info[0]
+          cards[i].prizeEnum = Number(info[2])
+          cards[i].amount = ethers.formatEther(info[3])
+          cards[i].status = !info[0]
+            ? '待刮開'
+            : (Number(info[2]) > 0 ? '已中獎' : '未中獎')
+        } catch (e) {
+          console.warn('查詢鏈上卡片失敗', card.tokenId, e)
+        }
+      }
+    }
+    localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(cards))
+  }
+  cardRecord.value = cards
   console.log('🎴 Loaded cards:', cardRecord.value)
 }
 
@@ -161,24 +254,27 @@ function saveCards(cards) {
 
 // 在 onMounted 時取得錢包地址
 onMounted(async () => {
-  console.log('🔍 CardsView mounted')
   if (window.ethereum) {
-    try {
-      console.log('🦊 MetaMask detected')
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-      console.log('👛 Connected accounts:', accounts)
-      if (accounts && accounts.length > 0) {
-        userAddress.value = accounts[0]
-        console.log('✅ User address set:', userAddress.value)
-        loadCards() // 載入該地址的卡片
-      }
-    } catch (e) {
-      console.error('❌ 連接錢包失敗:', e)
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    if (accounts && accounts.length > 0) {
+      userAddress.value = accounts[0]
+      loadCardsFromLocal() // 只在 userAddress 有值時才 load
     }
-  } else {
-    console.log('⚠️ MetaMask not detected')
   }
 })
+
+function loadCardsFromLocal() {
+  const key = `myCards_${userAddress.value}`
+  let cards = JSON.parse(localStorage.getItem(key) || '[]')
+  // 過濾掉沒有 tokenId 的待刮開卡片
+  cards = cards.filter(card => !(card.status === '待刮開' && !card.tokenId && card.tokenId !== 0))
+  // 只保留狀態正確的卡片
+  const validStatus = ['待刮開', '已中獎', '未中獎']
+  cards = cards.filter(card => validStatus.includes(card.status))
+  cardRecord.value = cards
+  localStorage.setItem(key, JSON.stringify(cards))
+  console.log('Loaded cards:', cards)
+}
 
 // 監聽錢包地址變動
 window.ethereum?.on('accountsChanged', (accounts) => {
@@ -195,28 +291,41 @@ const statusTypes = ['全部', '已中獎', '未中獎', '待刮開']
 const selectedStatus = ref('全部')
 const filteredCards = computed(() => {
   if (selectedStatus.value === '全部') return cardRecord.value
-  if (selectedStatus.value === '待刮開') {
-    return cardRecord.value.filter(card => card.status === '待刮開')
-  }
-  if (selectedStatus.value === '未中獎') {
-    return cardRecord.value.filter(card => card.status !== '待刮開' && Number(card.prize) === 0)
-  }
-  if (selectedStatus.value === '已中獎') {
-    return cardRecord.value.filter(card => card.status !== '待刮開' && Number(card.prize) > 0)
-  }
-  return cardRecord.value
+  return cardRecord.value.filter(c => c.status === selectedStatus.value)
 })
 
+// 更新卡片狀態（在 reveal 後調用）
+function updateCardStatus(tokenId, prizeEnum, prizeAmount) {
+  if (!userAddress.value) return
+  const myCards = JSON.parse(localStorage.getItem(`myCards_${userAddress.value}`) || '[]')
+  const cardIndex = myCards.findIndex(card => card.tokenId === tokenId)
+  
+  if (cardIndex !== -1) {
+    myCards[cardIndex] = {
+      ...myCards[cardIndex],
+      revealed: true,
+      prizeEnum: prizeEnum,
+      status: prizeEnum > 0 ? '已中獎' : '未中獎',
+      amount: prizeEnum > 0 ? prizeAmount : ''
+    }
+    localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(myCards))
+    cardRecord.value = myCards
+  }
+}
+
 // 新增卡片時，已中獎或未中獎都會存進 userAddress 專屬 localStorage
-function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
+function addCardToMyCards(card, tokenId) {
   if (!userAddress.value) return
   const myCards = JSON.parse(localStorage.getItem(`myCards_${userAddress.value}`) || '[]')
   const newCard = {
     id: Date.now(),
+    tokenId: tokenId,
     img: card.image,
     name: card.name,
-    status: resultStatus,
-    amount: resultStatus === '已中獎' ? prizeAmount : ''
+    revealed: false,
+    prizeEnum: 0,
+    status: '待刮開',
+    amount: ''
   }
   myCards.push(newCard)
   localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(myCards))
@@ -227,14 +336,133 @@ const scratchModalCard = ref(null)
 const showScratchModal = ref(false)
 
 function openScratchModal(card) {
-  if (card.status !== '待刮開') return // 只允許待刮開
-  scratchModalCard.value = card
-  showScratchModal.value = true
+  // prizeEnum/prizeIndex 應該已經存在於 card
+  const prizeIndex = card.prizeEnum || 0; // 預設未中獎
+  revealedImg.value = prizeOptions[prizeIndex]?.img || '/images/prizes/thanks.png';
+  scratchModalCard.value = card;
+  prizeGiven.value = false;
+  scratchedPercent.value = 0;
+  showScratchModal.value = true;
+  revealResult.value = null;
+  revealLoading.value = false;
+  nextTick(drawMask);
+}
+
+function drawMask() {
+  if (scratchCanvas.value) {
+    const ctx = scratchCanvas.value.getContext('2d')
+    const maskImg = new window.Image()
+    maskImg.src = '/images/unscratch.png'
+    maskImg.onload = () => {
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.clearRect(0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+      ctx.drawImage(maskImg, 0, 0, scratchCanvas.value.width, scratchCanvas.value.height)
+    }
+  }
+}
+
+watch(showScratchModal, (val) => {
+  if (val) nextTick(drawMask)
+})
+
+// canvas 刮開 40% 直接彈出結果彈窗
+const startScratching = () => {
+  isScratching = true;
+}
+
+const scratch = (event) => {
+  if (!isScratching || !scratchCanvas.value) return;
+  const ctx = scratchCanvas.value.getContext('2d');
+  const rect = scratchCanvas.value.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 計算已刮面積百分比
+  const imageData = ctx.getImageData(0, 0, scratchCanvas.value.width, scratchCanvas.value.height);
+  let transparent = 0;
+  for (let i = 3; i < imageData.data.length; i += 4) {
+    if (imageData.data[i] === 0) transparent++;
+  }
+  scratchedPercent.value = transparent / (scratchCanvas.value.width * scratchCanvas.value.height) * 100;
+
+  // 若已刮超過40%，觸發 reveal 並顯示 loading
+  if (scratchedPercent.value > 40 && !prizeGiven.value) {
+    prizeGiven.value = true;
+    revealLoading.value = true;
+    revealCard(scratchModalCard.value.tokenId);
+  }
+}
+
+async function revealCard(tokenId) {
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+    const tx = await contract.reveal(tokenId);
+    await tx.wait();
+    const info = await contract.getTokenInfo(tokenId);
+    const prizeIndex = Number(info[2]);
+    const amount = ethers.formatEther(info[3]);
+    // 不再切換 revealedImg，canvas 下層圖片不變
+    revealResult.value = {
+      prize: prizeIndex,
+      amount: amount
+    };
+    // 更新 localStorage 狀態
+    updateCardStatus(tokenId, prizeIndex, amount);
+  } catch (e) {
+    revealResult.value = {
+      prize: 0,
+      amount: '0.0'
+    };
+  } finally {
+    revealLoading.value = false;
+  }
+}
+
+const stopScratching = () => {
+  isScratching = false;
 }
 
 function closeScratchModal() {
   showScratchModal.value = false
   scratchModalCard.value = null
+}
+
+// mint 成功後
+function addCardAfterMint(card, tokenId) {
+  const key = `myCards_${userAddress.value}`
+  const cards = JSON.parse(localStorage.getItem(key) || '[]')
+  const newCard = {
+    id: Date.now(),
+    tokenId,
+    img: card.image,
+    name: card.name,
+    status: '待刮開',
+    prize: 0
+  }
+  cards.push(newCard)
+  localStorage.setItem(key, JSON.stringify(cards))
+  cardRecord.value = cards
+}
+
+// reveal 成功後
+function updateCardAfterReveal(tokenId, prizeAmount) {
+  const key = `myCards_${userAddress.value}`
+  const cards = JSON.parse(localStorage.getItem(key) || '[]')
+  const updated = cards.map(card =>
+    card.tokenId === tokenId
+      ? { ...card,
+          status: prizeAmount > 0 ? '已中獎' : '未中獎',
+          prize: prizeAmount }
+      : card
+  )
+  localStorage.setItem(key, JSON.stringify(updated))
+  cardRecord.value = updated
 }
 </script>
 

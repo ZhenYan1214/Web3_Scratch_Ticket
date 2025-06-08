@@ -278,32 +278,24 @@ const showScratch = () => {
   }, 1000)
 }
 
-function addCardToMyCards(card, resultStatus = '待刮開', prizeAmount = '') {
-  console.log('📝 Adding card to storage:', { card, resultStatus, prizeAmount })
-  if (!userAddress.value) {
-    console.error('❌ 未連接錢包')
-    return
-  }
-  const myCards = JSON.parse(localStorage.getItem(`myCards_${userAddress.value}`) || '[]')
-  console.log('📦 Current cards in storage:', myCards)
+function addCardToMyCards(card, tokenId) {
+  const key = `myCards_${userAddress.value}`
+  const cards = JSON.parse(localStorage.getItem(key) || '[]')
   const newCard = {
     id: Date.now(),
+    tokenId: tokenId,
     img: card.image,
     name: card.name,
-    status: resultStatus,
-    amount: resultStatus === '已中獎' ? prizeAmount : ''
+    status: '待刮開',
+    amount: ''
   }
+  cards.push(newCard)
+  localStorage.setItem(key, JSON.stringify(cards))
   console.log('🆕 New card to add:', newCard)
-  myCards.push(newCard)
-  localStorage.setItem(`myCards_${userAddress.value}`, JSON.stringify(myCards))
-  console.log('💾 Saved cards to storage:', myCards)
-  justAddedCardId.value = newCard.id
+  console.log('💾 Saved cards to storage:', cards)
 }
 
 const resetScratchCard = () => {
-  if (selectedCard.value) {
-    addCardToMyCards(selectedCard.value)
-  }
   selectedCard.value = null
   showPayModal.value = false
   showAfterPay.value = false
@@ -537,7 +529,7 @@ async function buyCard() {
       // 將卡片加入到 localStorage
       if (selectedCard.value) {
         console.log('📝 準備將卡片加入到 localStorage:', selectedCard.value)
-        addCardToMyCards(selectedCard.value)
+        addCardToMyCards(selectedCard.value, tokenId.value.toString())
       }
       showAfterPay.value = true
     } else {
