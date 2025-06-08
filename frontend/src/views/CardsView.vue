@@ -127,17 +127,13 @@
               <div class="text-4xl mb-4" v-if="revealResult.amount !== '0.0'">🎉</div>
               <div class="text-2xl font-bold mb-2 text-[#7c4585]">{{ revealResult.amount !== '0.0' ? '恭喜中獎！' : '未中獎' }}</div>
               <div class="text-xl mb-1 text-[#7c4585]">恭喜你中了：<span class="font-bold">{{ prizeNameMap[revealResult.prize] }}！！！</span></div>
-              <div class="text-xl mb-4 text-yellow-700">你獲得了：<span class="font-bold">{{ revealResult.amount }} ETH！！！</span></div>
+              <div class="text-xl mb-4 text-yellow-700">你獲得了：<span class="font-bold">{{ Number(revealResult.amount).toFixed(4) }} ETH！！！</span></div>
               <div v-if="revealResult.amount !== '0.0'" class="text-lg text-green-600 font-semibold mb-2">獎金已自動發送到你的錢包❤️</div>
               <button class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition" @click="closeScratchModal">關閉</button>
             </div>
           </div>
         </div>
-        <button
-          v-if="!revealResult || revealLoading"
-          class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition mt-4 w-full"
-          @click="closeScratchModal"
-        >關閉</button>
+
       </div>
     </div>
   </div>
@@ -336,9 +332,8 @@ const scratchModalCard = ref(null)
 const showScratchModal = ref(false)
 
 function openScratchModal(card) {
-  // prizeEnum/prizeIndex 應該已經存在於 card
-  const prizeIndex = card.prizeEnum || 0; // 預設未中獎
-  revealedImg.value = prizeOptions[prizeIndex]?.img || '/images/prizes/thanks.png';
+  // 直接顯示正確的獎項圖
+  revealedImg.value = prizeOptions[card.prizeEnum]?.img || '/images/prizes/thanks.png';
   scratchModalCard.value = card;
   prizeGiven.value = false;
   scratchedPercent.value = 0;
@@ -365,7 +360,7 @@ watch(showScratchModal, (val) => {
   if (val) nextTick(drawMask)
 })
 
-// canvas 刮開 40% 直接彈出結果彈窗
+// canvas 刮開 50% 直接彈出結果彈窗
 const startScratching = () => {
   isScratching = true;
 }
@@ -389,8 +384,8 @@ const scratch = (event) => {
   }
   scratchedPercent.value = transparent / (scratchCanvas.value.width * scratchCanvas.value.height) * 100;
 
-  // 若已刮超過40%，觸發 reveal 並顯示 loading
-  if (scratchedPercent.value > 40 && !prizeGiven.value) {
+  // 若已刮超過50%，觸發 reveal 並顯示 loading
+  if (scratchedPercent.value > 50 && !prizeGiven.value) {
     prizeGiven.value = true;
     revealLoading.value = true;
     revealCard(scratchModalCard.value.tokenId);
@@ -412,7 +407,6 @@ async function revealCard(tokenId) {
       prize: prizeIndex,
       amount: amount
     };
-    // 更新 localStorage 狀態
     updateCardStatus(tokenId, prizeIndex, amount);
   } catch (e) {
     revealResult.value = {

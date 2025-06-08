@@ -151,7 +151,7 @@
 
     <!-- VRF loading 動畫 -->
     <div v-if="showVRFLoading" class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
-      <img src="/images/正式loading.gif" alt="Loading..." class="w-72 h-72 mb-6" />
+      <img src="/images/正式loading2.gif" alt="Loading..." class="w-72 h-72 mb-6" />
       <div class="text-yellow-100 text-xl font-bold">財神爺正在搖金元寶，專屬幸運號碼即將降臨</div>
     </div>
   </div>
