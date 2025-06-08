@@ -59,7 +59,9 @@
           <h2 class="text-3xl font-bold mb-6 text-center" style="color: #7c4585;">🏆 獎池資訊</h2>
           <span>
             <h3 class="text-2xl font-bold mb-4 text-center" style="color: #7c4585;">目前獎池總額</h3>
-            <p class="text-3xl font-extrabold text-yellow-500 mb-6 text-center">10.00 ETH</p>
+            <p class="text-3xl font-extrabold text-yellow-500 mb-6 text-center">
+              {{ isNaN(Number(poolBalance)) ? poolBalance : Number(poolBalance).toFixed(4) }} ETH
+            </p>
           </span>
           <ul class="list-disc pl-6 text-lg" style="color: #7c4585;">
             <li>金幣大放送：可獲得獎池金額的40%</li>
@@ -94,7 +96,30 @@
 </template>
 
 <script setup>
-// 無AOS動畫，無需特別JS
+import { ref, onMounted } from 'vue'
+import { ethers } from 'ethers'
+
+const poolBalance = ref('載入中...')
+
+const CONTRACT_ADDRESS = '0xF689Df063700A11b5916309c382Ed5d93401927B'
+const CONTRACT_ABI = [
+  'function poolBalance() view returns (uint256)'
+]
+
+onMounted(async () => {
+  if (window.ethereum) {
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+      const balance = await contract.poolBalance()
+      poolBalance.value = ethers.formatEther(balance)
+    } catch (e) {
+      poolBalance.value = '讀取失敗'
+    }
+  } else {
+    poolBalance.value = '請安裝錢包'
+  }
+})
 </script>
 
 <style scoped>
