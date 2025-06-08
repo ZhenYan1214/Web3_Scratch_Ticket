@@ -1,27 +1,28 @@
 {
-  "name": "piggy-vault",
-  "private": true,
-  "version": "0.0.0",
+  "name": "web3-scratch-ticket",
+  "homepage": "https://ZhenYan1214.github.io/Web3_Scratch_Ticket",
+  "version": "1.0.0",
+  "private": false,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "predeploy": "npm run build",
     "preview": "vite preview",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "ethers": "^6.11.1",
-    "piggy-vault": "file:",
-    "pinia": "^3.0.2",
     "vue": "^3.4.15",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "ethers": "^6.11.1",
+    "pinia": "^3.0.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.4",
-    "autoprefixer": "^10.4.21",
+    "vite": "^5.0.12",
     "gh-pages": "^6.3.0",
-    "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
-    "vite": "^5.0.12"
+    "postcss": "^8.5.3",
+    "autoprefixer": "^10.4.21"
   }
 }
