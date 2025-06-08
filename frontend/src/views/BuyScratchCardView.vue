@@ -60,10 +60,7 @@
             class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
             @click="showScratch"
           >刮開刮刮樂</button>
-          <button
-            class="flex-1 bg-gray-300 text-[#7c4585] py-2 rounded-lg hover:bg-gray-400"
-            @click="resetScratchCard"
-          >下次再來刮</button>
+          
         </div>
       </div>
     </div>
@@ -135,12 +132,14 @@
             <div class="text-xl mb-1 text-[#7c4585]">恭喜你中了：<span class="font-bold">{{ prizeNameMap[revealResult.prize] }}！！！</span></div>
             <div class="text-xl mb-4 text-yellow-700">你獲得了：<span class="font-bold">{{ revealResult.amount }} ETH！！！</span></div>
             <div v-if="revealResult.amount !== '0.0'" class="text-lg text-green-600 font-semibold mb-2">獎金已自動發送到你的錢包❤️</div>
+            <!-- 關閉按鈕只在結果時出現 -->
+            <button
+              class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition mt-4"
+              @click="closePrizeModal"
+            >關閉</button>
           </div>
           <div v-else-if="revealError" class="text-red-500 font-bold">{{ revealError }}</div>
-          <button
-            class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition"
-            @click="closePrizeModal"
-          >關閉</button>
+
         </div>
       </div>
     </div>

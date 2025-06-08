@@ -48,17 +48,14 @@
             <div
               :class="[
                 'bg-white text-[#7c4585] rounded-lg shadow-lg p-6 text-center min-w-[220px] w-64 h-[370px] flex flex-col items-center justify-between border-4 transition-transform duration-300 hover:scale-105',
-                card.status === '待刮開'
-                  ? 'border-yellow-300'
-                  : card.status === '已中獎'
+                     card.status === '已中獎'
                   ? 'border-emerald-400'
                   : card.status === '未中獎'
                   ? 'border-gray-400'
                   : 'border-yellow-400/50',
                 justAdded === card.id ? 'animate-shake-x' : ''
               ]"
-               @click="card.status === '待刮開' ? openScratchModal(card) : null"
-                class="cursor-pointer"
+           
             >
               <div class="w-36 h-36 mx-auto mb-2 flex items-center justify-center rounded-lg overflow-hidden bg-white">
                 <img :src="card.img" :alt="card.name" class="w-full h-full object-contain" />
@@ -191,20 +188,17 @@ window.ethereum?.on('accountsChanged', (accounts) => {
   }
 })
 
-const statusTypes = ['全部', '已中獎', '未中獎', '待刮開']
+const statusTypes = ['全部', '已中獎', '未中獎']
 const selectedStatus = ref('全部')
 const filteredCards = computed(() => {
-  if (selectedStatus.value === '全部') return cardRecord.value
-  if (selectedStatus.value === '待刮開') {
-    return cardRecord.value.filter(card => card.status === '待刮開')
-  }
+  if (selectedStatus.value === '全部') return cardRecord.value.filter(card => card.status !== '待刮開')
   if (selectedStatus.value === '未中獎') {
     return cardRecord.value.filter(card => card.status !== '待刮開' && Number(card.prize) === 0)
   }
   if (selectedStatus.value === '已中獎') {
     return cardRecord.value.filter(card => card.status !== '待刮開' && Number(card.prize) > 0)
   }
-  return cardRecord.value
+  return cardRecord.value.filter(card => card.status !== '待刮開')
 })
 
 // 新增卡片時，已中獎或未中獎都會存進 userAddress 專屬 localStorage
@@ -227,9 +221,8 @@ const scratchModalCard = ref(null)
 const showScratchModal = ref(false)
 
 function openScratchModal(card) {
-  if (card.status !== '待刮開') return // 只允許待刮開
-  scratchModalCard.value = card
-  showScratchModal.value = true
+  // 不再允許打開待刮開卡片
+  return
 }
 
 function closeScratchModal() {

@@ -33,33 +33,14 @@
         <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
           Web3 時代的智能理財新選擇
         </p>
-      </div>
 
-      <!-- 規則說明 -->
-      <div class="text-center space-y-6">
-        <h2 class="text-3xl font-bold text-yellow-300 mb-4">規則說明</h2>
-        <ul class="text-xl text-yellow-100 space-y-2">
-          <li>1. 連接錢包後可購買刮刮樂，每張 0.01 ETH。</li>
-          <li>2. 刮開刮刮樂有機會獲得不同獎項，最高可得金幣大放送獎！</li>
-          <li>3. 每日抽取八位幸運用戶，獎池金額每日更新。</li>
-          <li>4. 所有過程皆由智能合約自動執行，公平公正。</li>
-        </ul>
-      </div>
-
-      <!-- 底部資訊 -->
-      <div class="mt-12 text-center">
-        <div class="special-offer">
-          <span class="icon">🎁</span>
-          <span class="text">新年限定：連接錢包即可參與 888 ETH 限時空投</span>
-          <span class="icon">🎁</span>
-        </div>
-      </div>
-
+        <div class="my-5"></div>
+      
       <!-- 連接錢包按鈕（不再fixed，直接放在內容下方） -->
       <div v-if="!walletConnected" class="mt-8 flex flex-col items-center">
         <button
           @click="connectWallet"
-          class="wallet-btn bg-yellow-400 text-[#7c4585] px-8 py-4 rounded-xl font-bold text-2xl shadow-lg hover:bg-yellow-300 transition"
+          class="wallet-btn bg-yellow-400 text-[#7c4585] px-24 py24 rounded-xl font-bold text-4xl shadow-lg hover:bg-yellow-300 transition"
           :disabled="isConnecting"
         >
           {{ isConnecting ? '連接中...' : '連接錢包' }}
@@ -84,6 +65,19 @@
       >
         錢包已連接，正在跳轉...
       </div>
+
+      <div class="my-5"></div>
+    <!-- 規則說明 -->
+      <div class="text-center space-y-6">
+        <h2 class="text-3xl font-bold text-yellow-300 mb-4">規則說明</h2>
+        <ul class="text-xl text-yellow-100 space-y-2">
+          <li>1. 連接錢包後可購買刮刮樂，每張 0.01 ETH。</li>
+          <li>2. 刮開刮刮樂有機會獲得不同獎項，最高可得金幣大放送獎！</li>
+          <li>3. 每日抽取八位幸運用戶，獎池金額每日更新。</li>
+          <li>4. 所有過程皆由智能合約自動執行，公平公正。</li>
+        </ul>
+      </div>
+    </div>
     </div>
   </div>
 </template>
