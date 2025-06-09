@@ -150,7 +150,7 @@
   const isConnecting = ref(false)
 
   const poolBalance = ref('0.00')
-  const CONTRACT_ADDRESS = '0xF689Df063700A11b5916309c382Ed5d93401927B'
+  const CONTRACT_ADDRESS = '0x16E8D265dd429E8592A98188c74FE7ba75648818'
   const CONTRACT_ABI = [
     'function poolBalance() view returns (uint256)'
   ]

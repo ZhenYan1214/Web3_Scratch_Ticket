@@ -152,7 +152,7 @@ const userAddress = ref('')
 // 讀取當前 userAddress 下的卡片
 const cardRecord = ref([])
 
-const CONTRACT_ADDRESS = '0xF689Df063700A11b5916309c382Ed5d93401927B'
+const CONTRACT_ADDRESS = '0x16E8D265dd429E8592A98188c74FE7ba75648818'
 const CONTRACT_ABI = [
     // 讀取函數
     "function nextTokenId() view returns (uint256)",

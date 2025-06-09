@@ -3,7 +3,7 @@ const { ethers } = hre;
 
 // 配置
 const CONFIG = {
-    contractAddress: '0xF689Df063700A11b5916309c382Ed5d93401927B',
+    contractAddress: '0x16E8D265dd429E8592A98188c74FE7ba75648818',
     // 使用 Hardhat 配置的網路，不需要額外設定 RPC
     privateKey: process.env.PRIVATE_KEY, // 請替換成你的私鑰，或使用 Hardhat 帳戶
 };
@@ -18,9 +18,7 @@ const CONTRACT_ABI = [
     "function tokenIdToRandomNumber(uint256) view returns (uint256)",
     "function tokenIdToPrize(uint256) view returns (uint8)",
     "function isRevealed(uint256) view returns (bool)",
-    "function getTokenInfo(uint256 tokenId) view returns (bool revealed, uint256 randomNumber, uint8 prize, uint256 potentialPrize)",
-    "function getContractStats() view returns (uint256 totalSupply, uint256 currentPoolBalance, uint256 currentPlatformFee)",
-    
+    "function getTokenInfo(uint256 tokenId) view returns (bool revealed, uint256 randomNumber, uint8 prize, uint256 potentialPrize)",    
     // 寫入函數
     "function mint() payable returns (uint256)",
     "function reveal(uint256 tokenId)",
@@ -77,23 +75,6 @@ class ContractTester {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // 測試函數
-    async testContractStats() {
-        await this.log("📊 測試合約統計信息...");
-        try {
-            const stats = await this.contract.getContractStats();
-            await this.log("✅ 合約統計:", {
-                totalSupply: stats[0].toString(),
-                poolBalance: this.formatEther(stats[1]) + " ETH",
-                platformFee: this.formatEther(stats[2]) + " ETH"
-            });
-            return true;
-        } catch (error) {
-            await this.log("❌ 獲取合約統計失敗:", error.message);
-            return false;
-        }
-    }
-/*
     async testAddToPool() {
         await this.log("💰 測試添加資金到獎池...");
         try {
@@ -114,7 +95,7 @@ class ContractTester {
             return false;
         }
     }
-*/
+
     async testMint() {
         await this.log("🎫 測試購買刮刮樂...");
         try {
@@ -247,13 +228,7 @@ class ContractTester {
         await this.log("🚀 開始完整測試流程...");
         await this.log("=".repeat(50));
 
-        // 1. 檢查合約統計
-        const statsOk = await this.testContractStats();
-        if (!statsOk) return;
-
-        await this.delay(2000);
-
-        // 2. 添加資金到獎池（如果是合約擁有者）
+        // 1. 添加資金到獎池（如果是合約擁有者）
         try {
             await this.testAddToPool();
             await this.delay(2000);
@@ -261,9 +236,18 @@ class ContractTester {
             await this.log("ℹ️ 跳過添加獎池資金 (可能不是合約擁有者)");
         }
 
-        // 3. 購買刮刮樂
+        // 2. 購買刮刮樂
         const tokenId = await this.testMint();
         if (!tokenId) return;
+
+        await this.delay(2000);
+
+        // 3. 等待隨機數生成
+        const randomNumberReady = await this.waitForRandomNumber(tokenId);
+        if (!randomNumberReady) {
+            await this.log("❌ 隨機數生成超時");
+            return;
+        }
 
         await this.delay(2000);
 
@@ -271,68 +255,36 @@ class ContractTester {
         await this.testTokenInfo(tokenId);
         await this.delay(2000);
 
-        // 5. 等待 VRF 隨機數
-        const randomReady = await this.waitForRandomNumber(tokenId);
-        if (!randomReady) {
-            await this.log("❌ VRF 隨機數生成失敗，跳過揭曉測試");
-            return;
-        }
-
-        await this.delay(2000);
-
-        // 6. 再次查詢代幣信息（應該有隨機數和獎項了）
-        await this.testTokenInfo(tokenId);
-        await this.delay(2000);
-
-        // 7. 揭曉獎項
+        // 5. 揭曉獎項
         await this.testReveal(tokenId);
-        await this.delay(2000);
-
-        // 8. 最終統計
-        await this.testContractStats();
 
         await this.log("=".repeat(50));
-        await this.log("🎉 測試流程完成！");
+        await this.log("✅ 測試流程完成");
     }
 
     async generateReport() {
-        console.log("\n" + "=".repeat(60));
-        console.log("📋 測試報告摘要");
-        console.log("=".repeat(60));
+        await this.log("\n📊 測試報告");
+        await this.log("=".repeat(50));
         
-        const successCount = this.testResults.filter(r => r.message.includes("✅")).length;
-        const errorCount = this.testResults.filter(r => r.message.includes("❌")).length;
-        
-        console.log(`✅ 成功操作: ${successCount}`);
-        console.log(`❌ 失敗操作: ${errorCount}`);
-        console.log(`📊 總操作數: ${this.testResults.length}`);
-        
-        if (errorCount > 0) {
-            console.log("\n❌ 錯誤詳情:");
-            this.testResults.filter(r => r.message.includes("❌")).forEach(r => {
-                console.log(`  - ${r.message}`);
-            });
+        for (const result of this.testResults) {
+            console.log(`[${result.timestamp}] ${result.message}`);
+            if (result.data) console.log(result.data);
         }
     }
 }
 
 async function main() {
-    console.log("🔧 初始化合約測試器...");
-    
     const tester = new ContractTester();
-    
-    try {
-        await tester.initialize(); // 初始化
-        await tester.testFullWorkflow();
-        await tester.generateReport();
-    } catch (error) {
-        console.log("❌ 測試過程中發生嚴重錯誤:", error);
-    }
+    await tester.initialize();
+    await tester.testFullWorkflow();
+    await tester.generateReport();
 }
 
-// 如果直接運行此腳本
-if (require.main === module) {
-    main().catch(console.error);
-}
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error("❌ 測試過程中發生嚴重錯誤:", error);
+        process.exit(1);
+    });
 
 module.exports = { ContractTester };
