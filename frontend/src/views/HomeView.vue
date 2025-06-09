@@ -55,7 +55,7 @@
     <div class="w-full bg-red-300/80 py-2 overflow-hidden marquee mb-5">
       <div class="marquee-content text-[#AE0000] font-bold text-lg flex items-center">
         <span v-for="(user, idx) in topUsers.slice(0, 8)" :key="idx" class="mx-8 whitespace-nowrap">
-          恭喜{{ user.name }} 刮中獎金 {{ user.amount }} ETH
+          恭喜{{ user.name }} 刮中獎金 {{ user.amount }} ETH 
         </span>
       </div>
     </div>
@@ -66,8 +66,8 @@
       <div class="flex flex-col items-center justify-center w-full">
         <!-- 獎池金額區塊（在圖片上方，置中） -->
         <div>
-          <span class="text-2xl font-bold text-yellow-100 mb-2">財神獎池累積金額：</span>
-          <span class="text-4xl md:text-6xl font-extrabold text-yellow-500 mb-1">
+          <span class="text-2xl font-bold text-yellow-100 mb-2 glow-label">財神獎池累積金額：</span>
+          <span class="text-4xl md:text-6xl font-extrabold text-yellow-500 mb-1 glow-text animate-scale animate-blink">
             {{ isNaN(Number(poolBalance)) ? poolBalance : Number(poolBalance).toFixed(4) }} ETH
           </span>
         </div>
@@ -77,18 +77,19 @@
           <img 
             src="/images/money2.jpg" 
             alt="主畫面的狐狸財神爺" 
-            class="absolute inset-0 w-[80%] h-[80%] object-cover transform translate-x-[22%] translate-y-[8%] animate-bounce"
+            class="absolute inset-0 w-[80%] h-[80%] object-cover mx-auto animate-bounce"
           />
         </div>
         <!-- 購買刮刮樂按鈕（移到圖片下方，並用static讓它不再浮動） -->
         <button
-          class="buy-float-btn static relative mx-auto mt-2 bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-16 py-8 rounded-2xl shadow-2xl text-4xl flex items-center gap-4"
+          class="buy-float-btn static relative mx-auto mt-2 bg-yellow-400 hover:bg-yellow-500 text-[#7c4585] font-bold px-16 py-8 rounded-2xl shadow-2xl text-4xl flex items-center gap-4 animate-glow glow-border"
           @click="connectWalletAndGoBuy"
           :disabled="isConnecting"
           style="position: static !important; right: auto !important; bottom: auto !important;"
         >
           <span class="text-5xl">🎫</span> 購買刮刮樂
         </button>
+        
       </div>
     </div>
 
@@ -364,6 +365,64 @@ onMounted(async () => {
   animation: shine-border 2s infinite;
   border-radius: 1rem;
   border: 4px solid transparent;
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 10px #ffe066, 0 0 20px #ffd700, 0 0 30px #ffd700;
+  }
+  50% {
+    box-shadow: 0 0 20px #ffd700, 0 0 40px #ffcc00, 0 0 60px #ffaa00;
+  }
+  100% {
+    box-shadow: 0 0 10px #ffe066, 0 0 20px #ffd700, 0 0 30px #ffd700;
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.glow-border {
+  border: 3px solid #ffd700;
+  border-radius: 1rem;
+}
+
+/* 金光發亮文字 */
+.glow-text {
+  text-shadow:
+    0 0 5px #885e20,
+    0 0 10px #ffc107,
+    0 0 20px #ffec99,
+    0 0 30px #664f0a;
+}
+
+/* 放大縮小動畫 */
+@keyframes scalePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+.animate-scale {
+  animation: scalePulse 1.8s ease-in-out infinite;
+}
+/* 標題文字發光（偏柔） */
+.glow-label {
+  text-shadow:
+    0 0 4px #8a731a,
+    0 0 8px #ffde59;
+}
+
+/* 閃爍動畫 */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+}
+.animate-blink {
+  animation: blink 1.2s ease-in-out infinite;
 }
 
 </style>
