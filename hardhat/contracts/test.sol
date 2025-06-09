@@ -176,18 +176,18 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
             uint256 rand = (_randomWords[0] % 10000) + 1; //因為是256bits的數字，所以我只取後面的餘數 共1~10000
             tokenIdToRandomNumber[tokenId] = rand;
 
-            // 分配獎項等級
+            // 中獎機率
             Prize prize;
-            if (rand <= 10) {
-                prize = Prize.Grand;      // 1~10
-            } else if (rand <= 200) {
-                prize = Prize.First;      // 11~200
-            } else if (rand <= 700) {
-                prize = Prize.Second;     // 201~700
-            } else if (rand <= 2200) {
-                prize = Prize.Consolation;// 701~2200
+            if (rand <= 100) {
+                prize = Prize.Grand;      // 1%
+            } else if (rand <= 600) {
+                prize = Prize.First;      // 5%
+            } else if (rand <= 1599) {
+                prize = Prize.Second;     // 10%
+            } else if (rand <= 3998) {
+                prize = Prize.Consolation;// 24%
             } else {
-                prize = Prize.None;       // 2201~9999
+                prize = Prize.None;       // 60%
             }
             tokenIdToPrize[tokenId] = prize;
         }
@@ -198,7 +198,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
             s_requests[_requestId].paid
         );
     }
-
+/*
     function getRequestStatus( // 查看狀況
         uint256 _requestId
     )
@@ -213,7 +213,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
 
     /// @notice withdrawNative withdraws the amount specified in amount to the owner
     /// @param amount the amount to withdraw, in wei
-
+*/
     function withdrawNative(uint256 amount) external onlyOwner { 
         require(amount <= address(this).balance, "Insufficient contract balance");
         (bool success, ) = payable(owner()).call{value: amount}("");
@@ -238,7 +238,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         prize = tokenIdToPrize[tokenId];
         potentialPrize = calculatePrizeAmount(prize);
     }
-
+/*
     function getContractStats() external view returns (  //查看合約狀況
         uint256 totalSupply,
         uint256 currentPoolBalance,
@@ -248,7 +248,7 @@ contract test is VRFV2PlusWrapperConsumerBase, Ownable, ERC721URIStorage, Reentr
         currentPoolBalance = poolBalance;
         currentPlatformFee = platformFee;
     }
-
+*/
     event Received(address, uint256);
 
     receive() external payable {
