@@ -26,12 +26,12 @@
       <div class="text-center mb-16 transform hover:scale-105 transition-transform duration-500">
         <div class="relative inline-block">
           <h1 class="text-7xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
-            財神存錢罐
+            財神狗刮刮樂
           </h1>
           <div class="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-red-600 opacity-30 blur"></div>
         </div>
         <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
-          Web3 時代的智能理財新選擇
+          Web3 時代的智能娛樂新選擇
         </p>
 
         <div class="my-5"></div>
@@ -63,13 +63,13 @@
         v-else
         class="mt-8 text-yellow-200 text-xl text-center"
       >
-        錢包已連接，正在跳轉...
+        錢包已連接，正在跳轉，汪...
       </div>
 
       <div class="my-5"></div>
     <!-- 規則說明 -->
       <div class="text-center space-y-6">
-        <h2 class="text-3xl font-bold text-yellow-300 mb-4">規則說明</h2>
+        <h2 class="text-3xl font-bold text-yellow-300 mb-4">規則說明 汪</h2>
         <ul class="text-xl text-yellow-100 space-y-2">
           <li>1. 連接錢包後可購買刮刮樂，每張 0.01 ETH。</li>
           <li>2. 刮開刮刮樂有機會獲得不同獎項，最高可得金幣大放送獎！</li>

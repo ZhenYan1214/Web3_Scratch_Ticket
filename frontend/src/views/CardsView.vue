@@ -126,7 +126,7 @@
             <div class="bg-white rounded-2xl shadow-2xl px-8 py-8 flex flex-col items-center border-4 border-yellow-400">
               <div class="text-4xl mb-4" v-if="revealResult.amount !== '0.0'">🎉</div>
               <div class="text-2xl font-bold mb-2 text-[#7c4585]">{{ revealResult.amount !== '0.0' ? '恭喜中獎！' : '未中獎' }}</div>
-              <div class="text-xl mb-1 text-[#7c4585]">恭喜你中了：<span class="font-bold">{{ prizeNameMap[revealResult.prize] }}！！！</span></div>
+              <div class="text-xl mb-1 text-[#7c4585]">汪汪說恭喜你刮到：<span class="font-bold">{{ prizeNameMap[revealResult.prize] }}！！！</span></div>
               <div class="text-xl mb-4 text-yellow-700">你獲得了：<span class="font-bold">{{ Number(revealResult.amount).toFixed(4) }} ETH！！！</span></div>
               <div v-if="revealResult.amount !== '0.0'" class="text-lg text-green-600 font-semibold mb-2">獎金已自動發送到你的錢包❤️</div>
               <button class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition" @click="closeScratchModal">關閉</button>
@@ -197,12 +197,12 @@ const prizeOptions = [
   { img: '/images/prizes/money.png' }       // 4: Grand
 ]
 const prizeNameMap = {
-  0: '祝君發財獎',
-  1: '小福星獎',
-  2: '發財進寶三獎',
-  3: '金銀滿屋二獎',
-  4: '財神親臨一獎',
-  5: '財源滾滾超級大獎'
+  0: '銘謝惠顧QQ',
+  1: '回饋獎',
+  2: '小確幸獎',
+  3: '好運滿滿獎',
+  4: '金幣大放送',
+  
 }
 
 const revealedImg = ref('') // canvas 下層圖片
