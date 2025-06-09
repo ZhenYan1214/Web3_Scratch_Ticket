@@ -44,10 +44,10 @@
       <div class="text-center mb-12 transform hover:scale-105 transition-transform duration-500">
         <div class="relative inline-block">
           <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 mb-6 animate-title-shine">
-            財神存錢罐
+            財神狗刮刮樂
           </h1>
           <p class="text-2xl md:text-3xl text-red-100 font-medium mt-4 animate-fade-in">
-            Web3 時代的智能理財新選擇
+            Web3 時代的智能娛樂新選擇
           </p>
         </div>
       </div>
@@ -63,6 +63,7 @@
               {{ isNaN(Number(poolBalance)) ? poolBalance : Number(poolBalance).toFixed(4) }} ETH
             </p>
           </span>
+          <h3 class="text-2xl font-bold mb-4 text-left" style="color: #7c4585;">獎項:</h3>
           <ul class="list-disc pl-6 text-lg" style="color: #7c4585;">
             <li>金幣大放送：可獲得獎池金額的40%</li>
             <li>好運滿滿獎：可獲得獎池金額的15%</li>
@@ -73,10 +74,10 @@
         <!-- 規則說明 -->
         <div class="flex-1 bg-white/90 rounded-lg shadow-lg p-8 max-w-xl mx-auto flex flex-col">
           <h2 class="text-3xl font-bold mb-6 text-center" style="color: #7c4585;">📜 規則說明</h2>
-          <ul class="list-decimal pl-6 text-lg space-y-3" style="color: #7c4585;">
+          <ul class="list-decimal pl-6 text-lg space-y-3" style="color: #7c4585;">          
             <li>連接錢包後可購買刮刮樂，每張 0.01 ETH。</li>
             <li>刮開刮刮樂有機會獲得不同獎項，最高可得金幣大放送獎！</li>
-            <li>每日抽取八位幸運用戶，獎池金額每日更新。</li>
+            <li>中獎機率為1%、5%、10%、24%</li>
             <li>所有過程皆由智能合約自動執行，公平公正。</li>
           </ul>
         </div>
@@ -87,7 +88,7 @@
       <div class="absolute bottom-8 left-0 right-0 text-center">
         <div class="special-offer">
           <span class="icon">🎁</span>
-          <span class="text">新年限定：連接錢包即可參與 888 ETH 限時空投</span>
+          <span class="text">走過路過不要錯過，來試試手氣吧!</span>
           <span class="icon">🎁</span>
         </div>
       </div>
