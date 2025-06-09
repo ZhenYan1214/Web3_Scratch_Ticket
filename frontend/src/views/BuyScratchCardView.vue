@@ -39,7 +39,7 @@
     <div v-if="showPayModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 shadow-lg w-96 text-[#7c4585]">
         <h2 class="text-2xl font-bold text-center mb-4">確認付款</h2>
-        <p class="text-center mb-4">請確認支付 <span class="font-bold">0.01 ETH</span> 以購買刮刮樂。</p>
+        <p class="text-center mb-4">支付 <span class="font-bold">0.01 ETH</span> 購買刮刮樂(我只能按一下哦❤️)</p>
         <button
           class="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 mb-2"
           @click="pay"
