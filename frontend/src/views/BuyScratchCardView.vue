@@ -133,7 +133,7 @@
             <div class="text-2xl font-bold mb-2" :class="revealResult.amount !== '0.0' ? 'text-green-700' : 'text-gray-500'">              {{ revealResult.amount !== '0.0' ? '恭喜中獎！' : '未中獎' }}
             </div>
             <div class="text-xl mb-1 text-[#7c4585]">汪汪說你刮到了：<span class="font-bold">{{ prizeNameMap[revealResult.prize] }}！！！</span></div>
-            <div class="text-xl mb-4 text-yellow-700">你獲得了：<span class="font-bold">{{ Number(revealResult.amount).toFixed(4) }} ETH！！！</span></div>
+            <div class="text-xl mb-4 text-yellow-700">叮咚～你收到：<span class="font-bold">{{ Number(revealResult.amount).toFixed(4) }} ETH，財運旺旺來報到！</span></div>
             <div v-if="revealResult.amount !== '0.0'" class="text-lg text-green-600 font-semibold mb-2">獎金已自動發送到你的錢包❤️</div>
             <button
               class="bg-yellow-400 text-[#7c4585] px-8 py-2 rounded-lg font-bold text-lg hover:bg-yellow-500 transition"
@@ -153,6 +153,12 @@
     <div v-if="showVRFLoading" class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
       <img src="/images/正式loading2.gif" alt="Loading..." class="w-72 h-72 mb-6" />
       <div class="text-yellow-100 text-xl font-bold">財神爺正在搖金元寶，專屬幸運號碼即將降臨</div>
+    </div>
+
+    <!-- MetaMask loading 動畫 -->
+    <div v-if="showMetaMaskLoading" class="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
+      <img src="/images/正式loading2.gif" alt="MetaMask Loading..." class="w-72 h-72 mb-6" />
+      <div class="text-yellow-100 text-xl font-bold">好運旺旺來！快到 MetaMask 點擊確認</div>
     </div>
   </div>
 </template>
@@ -207,6 +213,7 @@ const loadingMessage = ref('')
 const tokenId = ref(null)
 const randomReady = ref(false)
 const showVRFLoading = ref(false)
+const showMetaMaskLoading = ref(false)
 
 // reveal 相關狀態
 const revealResult = ref(null)
@@ -258,6 +265,8 @@ const selectCard = (card) => {
 }
 
 const pay = () => {
+  showPayModal.value = false
+  showMetaMaskLoading.value = true
   buyCard();
 }
 
@@ -326,7 +335,7 @@ const scratch = (event) => {
   }
   scratchedPercent.value = transparent / (scratchCanvas.value.width * scratchCanvas.value.height) * 100
 
-  // 若已刮超過40%，自動顯示獎金
+  // 若已刮超過50%，自動顯示獎金
   if (scratchedPercent.value > 50 && !prizeGiven.value) {
     givePrizeByImage()
     prizeGiven.value = true
@@ -481,6 +490,7 @@ const CONTRACT_ABI = [
 async function buyCard() {
   if (!window.ethereum) {
     alert('請先安裝 MetaMask！')
+    showMetaMaskLoading.value = false
     return
   }
   try {
@@ -493,54 +503,111 @@ async function buyCard() {
     console.log('用戶餘額:', ethers.formatEther(balance), 'ETH')
     if (balance < ethers.parseEther('0.01')) {
       alert('餘額不足！需要至少 0.01 ETH')
+      showMetaMaskLoading.value = false
       return
     }
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
-    console.log('發送 mint 交易...')
-    const tx = await contract.mint({ value: ethers.parseEther('0.01'), gasLimit: 500000 })
-    console.log('交易已發送，hash:', tx.hash)
-    console.log('等待交易確認...')
-    await tx.wait()
-    console.log('✅ 交易確認成功！')
+
+    // 關閉付款視窗，顯示 MetaMask loading
     showPayModal.value = false
-    // 顯示 VRF loading 動畫
-    showVRFLoading.value = true
-    // 取得 tokenId 並等待隨機數
-    const nextId = await contract.nextTokenId()
-    tokenId.value = nextId - 1n
-    console.log('🔍 開始查詢 tokenId:', tokenId.value.toString())
-    let randomNumber = 0
-    let found = false
-    for (let i = 0; i < 60; i++) {
-      randomNumber = await contract.tokenIdToRandomNumber(tokenId.value)
-      console.log(`[查詢第${i+1}次] tokenId: ${tokenId.value.toString()} randomNumber: ${randomNumber}`)
-      if (randomNumber > 0) {
-        found = true
-        break
+    showMetaMaskLoading.value = true
+
+    try {
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+      
+      // 監聽 VRF 事件
+      console.log('🎯 開始監聽 VRF 事件...')
+      let requestId = null
+      let randomWordsReceived = false
+      
+      // 監聽 RequestSent 事件
+      contract.on("RequestSent", (reqId, numWords) => {
+        console.log('📡 VRF 請求已發送:', { requestId: reqId.toString(), numWords: numWords.toString() })
+        requestId = reqId
+      })
+
+      // 監聽 RequestFulfilled 事件
+      contract.on("RequestFulfilled", (reqId, randomWords, payment) => {
+        console.log('🎲 VRF 回調已收到:', { 
+          requestId: reqId.toString(), 
+          randomWords: randomWords.map(x => x.toString()),
+          payment: payment.toString()
+        })
+        if (reqId.toString() === requestId?.toString()) {
+          randomWordsReceived = true
+        }
+      })
+
+      console.log('發送 mint 交易...')
+      const tx = await contract.mint({ value: ethers.parseEther('0.01'), gasLimit: 500000 })
+      console.log('交易已發送，hash:', tx.hash)
+      console.log('等待交易確認...')
+      await tx.wait()
+      console.log('✅ 交易確認成功！')
+
+      // 關閉 MetaMask loading，顯示 VRF loading
+      showMetaMaskLoading.value = false
+      showVRFLoading.value = true
+
+      // 取得 tokenId 並等待隨機數
+      const nextId = await contract.nextTokenId()
+      tokenId.value = nextId - 1n
+      console.log('🔍 開始查詢 tokenId:', tokenId.value.toString())
+      
+      // 等待 VRF 回調
+      let found = false
+      let finalRandomNumber = 0
+      for (let i = 0; i < 60; i++) {
+        const randomNumber = await contract.tokenIdToRandomNumber(tokenId.value)
+        console.log(`[查詢第${i+1}次] tokenId: ${tokenId.value.toString()} randomNumber: ${randomNumber.toString()}`)
+        
+        if (randomWordsReceived && randomNumber > 0) {
+          found = true
+          finalRandomNumber = randomNumber
+          break
+        }
+        await new Promise(r => setTimeout(r, 2000))
       }
-      await new Promise(r => setTimeout(r, 2000))
-    }
-    showVRFLoading.value = false
-    if (found) {
-      // 查詢合約獎項
-      const info = await contract.getTokenInfo(tokenId.value)
-      const prizeIndex = Number(info[2])
-      prizeResult.value = { img: prizeOptions[prizeIndex]?.img || '/images/prizes/thanks.png' }
-      console.log('✅ VRF 隨機數已生成:', { tokenId: tokenId.value.toString(), randomNumber: randomNumber.toString(), prizeIndex, prizeImg: prizeResult.value.img })
-      // 將卡片加入到 localStorage
-      if (selectedCard.value) {
-        console.log('📝 準備將卡片加入到 localStorage:', selectedCard.value)
-        addCardToMyCards(selectedCard.value, tokenId.value.toString())
+
+      // 移除事件監聽
+      contract.removeAllListeners("RequestSent")
+      contract.removeAllListeners("RequestFulfilled")
+
+      // 關閉 VRF loading
+      showVRFLoading.value = false
+
+      if (found) {
+        // 查詢合約獎項
+        const info = await contract.getTokenInfo(tokenId.value)
+        const prizeIndex = Number(info[2])
+        prizeResult.value = { img: prizeOptions[prizeIndex]?.img || '/images/prizes/thanks.png' }
+        console.log('✅ VRF 隨機數已生成:', { 
+          tokenId: tokenId.value.toString(), 
+          randomNumber: finalRandomNumber.toString(), 
+          prizeIndex, 
+          prizeImg: prizeResult.value.img 
+        })
+        // 將卡片加入到 localStorage
+        if (selectedCard.value) {
+          console.log('📝 準備將卡片加入到 localStorage:', selectedCard.value)
+          addCardToMyCards(selectedCard.value, tokenId.value.toString())
+        }
+        showAfterPay.value = true
+      } else {
+        console.log('⏰ 等待隨機數超時')
+        alert('等待隨機數超時，請稍後再試')
       }
-      showAfterPay.value = true
-    } else {
-      console.log('⏰ 等待隨機數超時')
+    } catch (error) {
+      console.error('❌ 交易失敗:', error)
+      showMetaMaskLoading.value = false
+      showVRFLoading.value = false
+      alert('交易失敗：' + (error?.message || '請稍後再試'))
+      return
     }
   } catch (error) {
-    let errorMessage = error?.message || '交易失敗'
-    alert('交易失敗：' + errorMessage)
-    console.error('錯誤詳情:', error)
+    console.error('❌ 初始化失敗:', error)
+    showMetaMaskLoading.value = false
     showVRFLoading.value = false
+    alert('初始化失敗：' + (error?.message || '請稍後再試'))
   }
 }
 </script>
