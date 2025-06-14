@@ -1,6 +1,6 @@
 # Web3 Scratch Ticket - On-Chain Luck with Chainlink VRF
 
-**[Live Demo →](https://luck0613.vercel.app)**  
+**[Live Demo](https://luck0613.vercel.app)**  
 *Make sure to switch your wallet to the Sepolia Testnet.*  
 It takes around **60 seconds** for the random number to be revealed.
 
