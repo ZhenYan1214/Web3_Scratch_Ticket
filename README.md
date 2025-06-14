@@ -55,6 +55,3 @@ To ensure **unpredictable and tamper-proof outcomes**, the project integrates **
 🔗 [https://luck0613.vercel.app](https://luck0613.vercel.app)  
 > Switch your wallet to **Sepolia Testnet** before interacting.
 
-## License
-
-This project is open-source under the [MIT License](LICENSE).
