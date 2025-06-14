@@ -1,3 +1,4 @@
+
 # Web3 Scratch Ticket - On-Chain Luck with Chainlink VRF
 
 **[Live Demo](https://luck0613.vercel.app)**  
@@ -14,6 +15,7 @@ This is a fully on-chain scratch card DApp built with **Vue** and **Ethers.js**,
 - **Contract Address:** [`0x16E8D265dd429E8592A98188c74FE7ba75648818`](https://sepolia.etherscan.io/address/0x16E8D265dd429E8592A98188c74FE7ba75648818)
 - **Network:** Sepolia Testnet
 - **Randomness Provider:** Chainlink VRF v2
+
 
 ## Game Rules
 
@@ -38,20 +40,25 @@ To ensure **unpredictable and tamper-proof outcomes**, the project integrates **
 
 ## Tech Stack
 
+
 - **Frontend:** Vue 3 + Ethers.js
 - **Smart Contract:** Solidity (ERC-721), Chainlink VRF
 - **Development:** Hardhat + Sepolia Testnet
 - **Deployment:** Vercel
 
+
 ## How It Works
+
 
 1. User connects wallet and purchases a scratch ticket.
 2. Contract requests a random number via Chainlink VRF.
 3. After a short delay (~60 seconds), the result is revealed on-chain.
 4. If the ticket is a winner, the prize is instantly allocated based on pool percentage.
 
+
 ## Try It Now
 
 🔗 [https://luck0613.vercel.app](https://luck0613.vercel.app)  
 > Switch your wallet to **Sepolia Testnet** before interacting.
+
 
