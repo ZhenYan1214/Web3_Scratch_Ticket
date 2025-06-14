@@ -3,7 +3,7 @@
 **[Live Demo](https://luck0613.vercel.app)**  
 *Make sure to switch your wallet to the Sepolia Testnet.*  
 It takes around **60 seconds** for the random number to be revealed.
-
+![Uploading image.png…]()
 ## Overview
 
 This is a fully on-chain scratch card DApp built with **Vue** and **Ethers.js**, powered by **Chainlink VRF** for verifiable randomness and **Hardhat** for smart contract development. Deployed on the **Sepolia Testnet**, this project showcases how blockchain-based games can provide transparency, fairness, and trust—all in one lucky spin!
