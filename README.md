@@ -1,9 +1,9 @@
-![image](https://github.com/user-attachments/assets/048fe53b-45cd-4ee2-ae63-660d1df61cbe)# Web3 Scratch Ticket - On-Chain Luck with Chainlink VRF
+# Web3 Scratch Ticket - On-Chain Luck with Chainlink VRF
 
 **[Live Demo](https://luck0613.vercel.app)**  
 *Make sure to switch your wallet to the Sepolia Testnet.*  
 It takes around **60 seconds** for the random number to be revealed.
-![DApp Preview](./preview.png)
+![image](https://github.com/user-attachments/assets/048fe53b-45cd-4ee2-ae63-660d1df61cbe)
 ## Overview
 
 This is a fully on-chain scratch card DApp built with **Vue** and **Ethers.js**, powered by **Chainlink VRF** for verifiable randomness and **Hardhat** for smart contract development. Deployed on the **Sepolia Testnet**, this project showcases how blockchain-based games can provide transparency, fairness, and trust—all in one lucky spin!
