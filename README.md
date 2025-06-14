@@ -1,57 +1,59 @@
-# Lucky Scratch - Web3 NFT Scratchcard on Polygon
+# Web3 Scratch Ticket - On-Chain Luck with Chainlink VRF
 
-**Lucky Scratch** is a fun, gamified NFT DApp where users can mint scratchcard NFTs and instantly reveal their luck. Built on Polygon, the game is fully decentralized, transparent, and 100% on-chain.
+**[Live Demo →](https://luck0613.vercel.app)**  
+*Make sure to switch your wallet to the Sepolia Testnet.*  
+It takes around **60 seconds** for the random number to be revealed.
 
----
+## Overview
 
-## How It Works
+This is a fully on-chain scratch card DApp built with **Vue** and **Ethers.js**, powered by **Chainlink VRF** for verifiable randomness and **Hardhat** for smart contract development. Deployed on the **Sepolia Testnet**, this project showcases how blockchain-based games can provide transparency, fairness, and trust—all in one lucky spin!
 
-1. Connect wallet (MetaMask)
-2. Mint a scratchcard NFT (0.01 ETH)
-3. Scratch visually on UI
-4. Click "Reveal" → get instant results
-5. If you win, ETH is sent directly from the prize pool!
+## Contract Details
 
----
+- **Contract Address:** [`0x16E8D265dd429E8592A98188c74FE7ba75648818`](https://sepolia.etherscan.io/address/0x16E8D265dd429E8592A98188c74FE7ba75648818)
+- **Network:** Sepolia Testnet
+- **Randomness Provider:** Chainlink VRF v2
 
-## Prize Tiers
+## 🎮 Game Rules
 
-| Prize       | Chance  | Reward              |
-|-------------|---------|---------------------|
-| Jackpot   | 0.1%    | 40% of prize pool   |
-| 2nd Prize | 1%      | 15% of prize pool   |
-| 3rd Prize | 5%      | 5% of prize pool    |
-| Refund    | 15%     | 50% refund          |
-| No Prize  | 78.9%   | No reward           |
+Each scratch card costs a fixed amount (in ETH), and prizes are determined based on the **current prize pool balance** multiplied by the **prize percentage**.
 
-> 95% of each mint funds the jackpot.  
-> 5% is collected as platform fee.
+### Prize Tiers
 
----
+| Prize Name             | % of Pool | Odds    |
+|------------------------|-----------|---------|
+| Grand Prize          | 40%       | 1%      |
+| Lucky Prize          | 15%       | 5%      |
+| Small Joy            | 5%        | 10%     |
+| Thank You Reward     | 2%        | 24%     |
+| No Prize             | 0%        | 60%     |
 
-## ⚙Tech Stack
+- The prize amount is calculated as:  
+  `Prize = prizePool × prizePercentage`
 
-- **Frontend**: Vue 3 + ethers.js  
-- **Contracts**: Solidity + Hardhat  
-- **Blockchain**: Polygon (Mumbai Testnet)  
-- **Storage**: IPFS (Pinata)  
+### Fairness Mechanism
 
----
+To ensure **unpredictable and tamper-proof outcomes**, the project integrates **Chainlink VRF**, which guarantees cryptographically secure randomness both off-chain and on-chain. No one—neither the user nor the contract owner—can predict or manipulate the result.
 
-## Core Features
+## Tech Stack
 
-- ERC721 NFT scratchcards  
-- Chain-verified prize pool payout  
-- IPFS-based image + metadata  
-- Real-time mint and reveal logic  
+- **Frontend:** Vue 3 + Ethers.js
+- **Smart Contract:** Solidity (ERC-721), Chainlink VRF
+- **Development:** Hardhat + Sepolia Testnet
+- **Deployment:** Vercel
 
----
+## 🛠 How It Works
 
-## Dev Commands
+1. User connects wallet and purchases a scratch ticket.
+2. Contract requests a random number via Chainlink VRF.
+3. After a short delay (~60 seconds), the result is revealed on-chain.
+4. If the ticket is a winner, the prize is instantly allocated based on pool percentage.
 
-```bash
-# Compile contracts
-npx hardhat compile
+## Try It Now
 
-# Deploy to testnet
-npx hardhat run scripts/deploy.js --network mumbai
+🔗 [https://luck0613.vercel.app](https://luck0613.vercel.app)  
+> Switch your wallet to **Sepolia Testnet** before interacting.
+
+## License
+
+This project is open-source under the [MIT License](LICENSE).
