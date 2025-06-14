@@ -14,7 +14,7 @@ This is a fully on-chain scratch card DApp built with **Vue** and **Ethers.js**,
 - **Network:** Sepolia Testnet
 - **Randomness Provider:** Chainlink VRF v2
 
-## 🎮 Game Rules
+## Game Rules
 
 Each scratch card costs a fixed amount (in ETH), and prizes are determined based on the **current prize pool balance** multiplied by the **prize percentage**.
 
@@ -42,7 +42,7 @@ To ensure **unpredictable and tamper-proof outcomes**, the project integrates **
 - **Development:** Hardhat + Sepolia Testnet
 - **Deployment:** Vercel
 
-## 🛠 How It Works
+## How It Works
 
 1. User connects wallet and purchases a scratch ticket.
 2. Contract requests a random number via Chainlink VRF.
