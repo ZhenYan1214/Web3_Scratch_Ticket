@@ -1,5 +1,5 @@
 
-# Web3 Scratch Ticket - On-Chain Luck with Chainlink VRF
+# Web3 Scratch Ticket 
 
 **[Live Demo](https://luck0613.vercel.app)**  
 *Make sure to switch your wallet to the Sepolia Testnet.*  
