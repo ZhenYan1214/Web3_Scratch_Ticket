@@ -1,10 +1,10 @@
-# 🎰 Lucky Scratch - Web3 NFT Scratchcard on Polygon
+# Lucky Scratch - Web3 NFT Scratchcard on Polygon
 
 **Lucky Scratch** is a fun, gamified NFT DApp where users can mint scratchcard NFTs and instantly reveal their luck. Built on Polygon, the game is fully decentralized, transparent, and 100% on-chain.
 
 ---
 
-## 🕹 How It Works
+## How It Works
 
 1. Connect wallet (MetaMask)
 2. Mint a scratchcard NFT (0.01 ETH)
@@ -14,22 +14,22 @@
 
 ---
 
-## 💸 Prize Tiers
+## Prize Tiers
 
 | Prize       | Chance  | Reward              |
 |-------------|---------|---------------------|
-| 🥇 Jackpot   | 0.1%    | 40% of prize pool   |
-| 🥈 2nd Prize | 1%      | 15% of prize pool   |
-| 🥉 3rd Prize | 5%      | 5% of prize pool    |
-| ✨ Refund    | 15%     | 50% refund          |
-| ❌ No Prize  | 78.9%   | No reward           |
+| Jackpot   | 0.1%    | 40% of prize pool   |
+| 2nd Prize | 1%      | 15% of prize pool   |
+| 3rd Prize | 5%      | 5% of prize pool    |
+| Refund    | 15%     | 50% refund          |
+| No Prize  | 78.9%   | No reward           |
 
 > 95% of each mint funds the jackpot.  
 > 5% is collected as platform fee.
 
 ---
 
-## ⚙️ Tech Stack
+## ⚙Tech Stack
 
 - **Frontend**: Vue 3 + ethers.js  
 - **Contracts**: Solidity + Hardhat  
@@ -38,7 +38,7 @@
 
 ---
 
-## 🧱 Core Features
+## Core Features
 
 - ERC721 NFT scratchcards  
 - Chain-verified prize pool payout  
@@ -47,7 +47,7 @@
 
 ---
 
-## 🛠 Dev Commands
+## Dev Commands
 
 ```bash
 # Compile contracts
